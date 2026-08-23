@@ -633,7 +633,7 @@ function buildHead(){
   const E0x = HEELx, E0y = HEELy;
   const L = LEAD + (n-1)*STEP + TAIL;
   const endX = E0x + ux*L, endY = E0y + uy*L;
-  const tipX = endX + nx*38 + ux*18, tipY = endY + ny*38 + uy*18;
+  const tipX = endX + nx*30 + ux*26, tipY = endY + ny*30 + uy*26;
 
   const peg  = i => { const a = LEAD + i*STEP;
                       return [E0x + ux*a + nx*IN, E0y + uy*a + ny*IN]; };
@@ -648,7 +648,7 @@ function buildHead(){
   // treble edge sweeps back to the nut with a slight concave curve
   s += `<path class="hs-body" d="M ${CX-NUT_HALF} ${NUT_Y} L ${f(HEELx)} ${f(HEELy)} L ${f(endX)} ${f(endY)}`
      + ` L ${f(tipX)} ${f(tipY)}`
-     + ` Q ${f(tipX-10)} ${f(tipY + (NUT_Y-tipY)*0.42)} ${CX+NUT_HALF} ${NUT_Y} Z"/>`;
+     + ` Q ${f(tipX-62)} ${f(tipY + (NUT_Y-tipY)*0.46)} ${CX+NUT_HALF} ${NUT_Y} Z"/>`;
 
   for(let i=0;i<n;i++){                                   // string: peg -> nut -> board
     const p = peg(i);
