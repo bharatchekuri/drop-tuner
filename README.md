@@ -48,9 +48,12 @@ shortcut — it will then open in a normal Safari tab, where the mic always work
 - Play a string. The nearest string **in that tuning** is targeted automatically,
   so while you drop the low E down to D it keeps pointing at D rather than
   flipping to Eb the way a plain chromatic tuner does.
-- The **headstock** view shows which peg to turn - the string, its tuner button
-  and its peg hole all light up together. **Headstock** toggles it off for a
-  compact row of string chips instead.
+- The **headstock** view shows which peg to turn - the string, its peg hole and
+  its note label all light up together. The headstock icon in the top right
+  toggles it off for a compact row of string chips instead; the next icon
+  toggles the artwork.
+- The headstock silhouette is traced pixel-for-pixel from `headstock-source.png`
+  by `trace-shape.py`, including the tuner-hole positions.
 - Tap a string (label or chip) to lock onto it; tap again to go back to auto.
 - Green means within +/-5 cents.
 - Reference pitch is fixed at A440.
