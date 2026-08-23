@@ -89,10 +89,9 @@
   .head{display:none;flex:0 0 auto;width:100%;max-width:236px;max-height:22dvh;height:auto;margin:10px auto 8px}
   body.headstock .head{display:block}
   body.headstock .strings{display:none}
-  .hs-body,.hs-board{fill:#120b06;stroke:#efe2cd;stroke-width:2.5;stroke-linejoin:round}
-  .hs-tab{fill:#1c1209;stroke:#efe2cd;stroke-width:2}
-  .hs-hole{fill:#0c0704;stroke:#efe2cd;stroke-width:2}
-  .hs-str{stroke:#efe2cd;stroke-width:1.9;fill:none;stroke-linejoin:round}
+  .hs-body{fill:#0f0a06;stroke:#efe2cd;stroke-width:2;stroke-linejoin:round}
+  .hs-hole{fill:#efe2cd}
+  .hs-str{stroke:#efe2cd;stroke-width:2;fill:none;stroke-linejoin:round;opacity:.92}
   .hs-lbl{cursor:pointer}
   .hs-lbl circle{fill:var(--bg2);stroke:var(--line);stroke-width:1.5}
   .hs-lbl text{fill:var(--dim);font-size:13px;font-weight:700;text-anchor:middle;dominant-baseline:middle}
@@ -102,9 +101,8 @@
   .hs-lbl.active text{fill:var(--txt)}
   .hs-lbl.done circle{fill:rgba(53,208,127,.20);stroke:var(--good)}
   .hs-lbl.done text,.hs-lbl.done tspan{fill:var(--good)}
-  .hs-str.active{stroke:var(--accent);stroke-width:3.2}
-  .hs-hole.active{stroke:var(--accent);stroke-width:3}
-  .hs-tab.active{stroke:var(--accent);fill:#2c1b0d}
+  .hs-str.active{stroke:var(--accent);stroke-width:3.2;opacity:1}
+  .hs-hole.active{fill:var(--accent)}
   body.photo .hs-lbl circle{fill:rgba(32,20,11,.62);stroke:rgba(255,255,255,.18)}
   .subrow{gap:8px}
   .subrow .ghost{flex:1;padding:13px 6px;font-size:14px}
@@ -616,64 +614,55 @@ function buildStrings(){
   paintStrings(state.locked, false);
 }
 
-/* ── headstock view ─────────────────────────────────────────────────────
-   Pointed in-line headstock, drawn as an outline: every tuner rides one swept
-   edge and the body runs out to a sharp tip. All geometry derives from that
-   edge and the string count, so it stretches correctly for 4-string bass and
-   ukulele as well as a 6-string.                                          */
+/* Traced pixel-for-pixel from the reference silhouette by trace-shape.py:
+   Otsu threshold, largest blob, Moore-neighbour contour walk, Douglas-Peucker.
+   The tuner holes and neck inlays are the ones the tracer found inside the
+   outline, so every hole sits exactly where the source image put it.      */
+const HS_TRACE = {
+  h: 300, path: "M 195.5 0.0 L 198.9 0.0 L 198.9 1.7 L 158.4 91.0 L 158.4 94.4 L 141.6 133.1 L 139.9 141.6 L 136.5 146.6 L 134.8 155.1 L 131.5 160.1 L 119.7 195.5 L 119.7 200.6 L 116.3 207.3 L 116.3 212.4 L 112.9 219.1 L 112.9 225.8 L 109.6 234.3 L 109.6 242.7 L 107.9 244.4 L 107.9 300.0 L 43.8 300.0 L 43.8 254.5 L 40.4 242.7 L 33.7 230.9 L 8.4 207.3 L 10.1 198.9 L 21.9 185.4 L 21.9 182.0 L 15.2 175.3 L 6.7 180.3 L 0.0 173.6 L 1.7 171.9 L 1.7 166.9 L 8.4 158.4 L 15.2 156.7 L 21.9 161.8 L 18.5 168.5 L 25.3 175.3 L 28.7 175.3 L 45.5 153.4 L 37.1 146.6 L 28.7 151.7 L 21.9 144.9 L 25.3 134.8 L 30.3 129.8 L 38.8 128.1 L 43.8 133.1 L 40.4 139.9 L 45.5 144.9 L 50.6 146.6 L 67.4 124.7 L 59.0 118.0 L 52.2 123.0 L 48.9 121.3 L 43.8 116.3 L 47.2 106.2 L 57.3 97.8 L 65.7 104.5 L 62.4 111.2 L 72.5 118.0 L 89.3 96.1 L 80.9 89.3 L 75.8 92.7 L 72.5 92.7 L 65.7 87.6 L 70.8 74.2 L 80.9 69.1 L 87.6 74.2 L 84.3 82.6 L 94.4 89.3 L 107.9 72.5 L 111.2 67.4 L 104.5 60.7 L 94.4 64.0 L 89.3 60.7 L 87.6 57.3 L 91.0 47.2 L 94.4 43.8 L 102.8 40.4 L 109.6 45.5 L 106.2 53.9 L 116.3 60.7 L 133.1 38.8 L 124.7 30.3 L 116.3 35.4 L 109.6 28.7 L 112.9 18.5 L 118.0 13.5 L 121.3 11.8 L 128.1 13.5 L 131.5 16.9 L 128.1 23.6 L 138.2 32.0 L 144.9 21.9 L 153.4 15.2 L 193.8 1.7 Z",
+  pegs: [[35.4,198.9,7.9], [58.0,168.5,7.4], [80.9,138.2,7.9], [103.7,107.9,7.5], [126.4,77.5,7.9], [149.3,47.2,7.4]],
+  inlays: [[56.5,268.0,8.1], [75.0,268.0,8.1], [94.3,268.1,8.5]],
+  nutX0: 52.5, nutX1: 98.3, nutY: 246.0, tail: 300.0
+};
+
 function buildHead(){
   const n = state.strings.length;
   if(!n){ head.innerHTML = ''; return; }
+  const T = HS_TRACE;
+  const pegs = T.pegs.slice(0, Math.min(n, T.pegs.length));
+  const m = pegs.length;
 
-  const CX = 176, NUT_Y = 300, NUT_HALF = 27, BOARD = NUT_Y + 60;
-  const STEP = 41, LEAD = 34, TAIL = 52, IN = 30;
-  const ux = 0.469, uy = -0.883;          // along the headstock: up and to the right
-  const nx = 0.883, ny = 0.469;           // inward normal, into the body
-  const HEELx = CX - NUT_HALF - 26, HEELy = NUT_Y - 30;   // flare below the first tuner
-  const E0x = HEELx, E0y = HEELy;
-  const L = LEAD + (n-1)*STEP + TAIL;
-  const endX = E0x + ux*L, endY = E0y + uy*L;
-  const tipX = endX + nx*30 + ux*26, tipY = endY + ny*30 + uy*26;
+  // outward normal of the tuner line, for placing the note labels clear of the body
+  const a = pegs[0], b = pegs[m-1];
+  let dx = (b[0]-a[0]) || 0, dy = (b[1]-a[1]) || -1;
+  const len = Math.hypot(dx, dy) || 1; dx /= len; dy /= len;
+  const ox = dy, oy = -dx;
+  const LBL = 74, R = 19;
+  const lbl  = p => [p[0] + ox*LBL, p[1] + oy*LBL];
+  const nutX = i => m === 1 ? (T.nutX0+T.nutX1)/2 : T.nutX0 + i*(T.nutX1-T.nutX0)/(m-1);
+  const f = v => Math.round(v*10)/10;
 
-  const peg  = i => { const a = LEAD + i*STEP;
-                      return [E0x + ux*a + nx*IN, E0y + uy*a + ny*IN]; };
-  const out  = (p, d) => [p[0] - nx*d, p[1] - ny*d];
-  const nutX = i => n === 1 ? CX : CX - 23 + i*(46/(n-1));
-  const ANG  = Math.atan2(-ny, -nx) * 180/Math.PI;
-  const f    = v => (Math.round(v*10)/10);
-
-  let s = '';
-  s += `<rect class="hs-board" x="${CX-NUT_HALF+5}" y="${NUT_Y-1}" width="${2*NUT_HALF-10}" height="${BOARD-NUT_Y+1}"/>`;
-  // bass edge carries the tuners; a short facet turns it into the point, then the
-  // treble edge sweeps back to the nut with a slight concave curve
-  s += `<path class="hs-body" d="M ${CX-NUT_HALF} ${NUT_Y} L ${f(HEELx)} ${f(HEELy)} L ${f(endX)} ${f(endY)}`
-     + ` L ${f(tipX)} ${f(tipY)}`
-     + ` Q ${f(tipX-62)} ${f(tipY + (NUT_Y-tipY)*0.46)} ${CX+NUT_HALF} ${NUT_Y} Z"/>`;
-
-  for(let i=0;i<n;i++){                                   // string: peg -> nut -> board
-    const p = peg(i);
-    s += `<polyline class="hs-str" data-hi="${i}" points="${f(p[0])},${f(p[1])} ${f(nutX(i))},${NUT_Y} ${f(nutX(i))},${BOARD}"/>`;
+  let s = `<path class="hs-body" d="${T.path}"/>`;
+  for(let i=0;i<m;i++){
+    const p = pegs[i];
+    s += `<polyline class="hs-str" data-hi="${i}" points="${f(p[0])},${f(p[1])} ${f(nutX(i))},${f(T.nutY)} ${f(nutX(i))},${f(T.tail)}"/>`;
   }
-  for(let i=0;i<n;i++){                                   // tuner button, aligned to the edge
-    const b = out(peg(i), IN + 5);
-    s += `<rect class="hs-tab" data-hi="${i}" x="${f(b[0]-15)}" y="${f(b[1]-7)}" width="30" height="14" rx="3"`
-       + ` transform="rotate(${f(ANG)} ${f(b[0])} ${f(b[1])})"/>`;
+  for(let i=0;i<m;i++){
+    const p = pegs[i];
+    s += `<circle class="hs-hole" data-hi="${i}" cx="${f(p[0])}" cy="${f(p[1])}" r="${f(p[2])}"/>`;
   }
-  for(let i=0;i<n;i++){
-    const p = peg(i);
-    s += `<circle class="hs-hole" data-hi="${i}" cx="${f(p[0])}" cy="${f(p[1])}" r="8.5"/>`;
-  }
-  for(let i=0;i<n;i++){                                   // note label, trailing each tuner
-    const l = out(peg(i), IN + 50), m = state.strings[i];
+  for(let i=0;i<m;i++){
+    const l = lbl(pegs[i]), mi = state.strings[i];
     s += `<g class="hs-lbl" data-i="${i}" transform="translate(${f(l[0])} ${f(l[1])})">`
-       + `<circle r="19"/><text>${midiName(m)}<tspan dy="3">${midiOctave(m)}</tspan></text></g>`;
+       + `<circle r="${R}"/><text>${midiName(mi)}<tspan dy="3">${midiOctave(mi)}</tspan></text></g>`;
   }
 
-  const l0 = out(peg(0), IN + 50), lN = out(peg(n-1), IN + 50);
-  const minX = Math.min(l0[0], lN[0]) - 23;
-  const minY = Math.min(tipY, lN[1] - 21) - 8;
-  const maxX = Math.max(tipX, l0[0] + 21, lN[0] + 21) + 8;
-  head.setAttribute('viewBox', `${f(minX)} ${f(minY)} ${f(maxX-minX)} ${f(BOARD - minY + 8)}`);
+  const ls = pegs.map(lbl);
+  const minX = Math.min(0, ...ls.map(p => p[0]-R)) - 6;
+  const maxX = Math.max(199, ...ls.map(p => p[0]+R)) + 6;
+  const minY = Math.min(0, ...ls.map(p => p[1]-R)) - 6;
+  const maxY = Math.max(T.h, T.tail) + 6;
+  head.setAttribute('viewBox', `${f(minX)} ${f(minY)} ${f(maxX-minX)} ${f(maxY-minY)}`);
   head.innerHTML = s;
 
   head.querySelectorAll('.hs-lbl').forEach(g => {
