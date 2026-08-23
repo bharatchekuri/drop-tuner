@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Drop Tuner</title>
+<meta name="description" content="Chromatic guitar tuner with drop and open tunings. No account, no subscription.">
+<meta name="theme-color" content="#0b0f14">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Drop Tuner">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<style>
+  :root{
+    --bg:#0b0f14; --bg2:#121a23; --line:#1e2a36; --dim:#5d6f80;
+    --txt:#e8eef5; --good:#35d07f; --near:#f2c14e; --off:#ef5b5b;
+    --accent:var(--off);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    background:radial-gradient(120% 80% at 50% 0%, #131d27 0%, var(--bg) 60%);
+    color:var(--txt);
+    font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;
+    -webkit-user-select:none;user-select:none;touch-action:manipulation;
+    overscroll-behavior:none;
+  }
+  .wrap{
+    min-height:100dvh;display:flex;flex-direction:column;gap:4px;
+    padding:calc(env(safe-area-inset-top) + 10px) 16px calc(env(safe-area-inset-bottom) + 14px);
+    max-width:520px;margin:0 auto;
+  }
+
+  header{display:flex;gap:10px;align-items:center}
+  select#tuning{
+    flex:1;min-width:0;appearance:none;-webkit-appearance:none;
+    background:var(--bg2) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' fill='none' stroke='%235d6f80' stroke-width='1.6' stroke-linecap='round'/></svg>") no-repeat right 12px center;
+    border:1px solid var(--line);color:var(--txt);border-radius:12px;
+    padding:11px 32px 11px 13px;font-size:15px;font-weight:600;
+  }
+  .ref{display:flex;align-items:center;background:var(--bg2);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .ref button{background:none;border:0;color:var(--dim);font-size:19px;width:34px;height:42px;line-height:1}
+  .ref button:active{color:var(--txt)}
+  .ref span{font-size:13px;font-variant-numeric:tabular-nums;color:var(--dim);min-width:56px;text-align:center}
+  .ref span b{color:var(--txt);font-weight:600}
+
+  main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
+  svg#gauge{width:100%;max-width:360px;display:block}
+  .tick{stroke:#2c3a48;stroke-width:2;stroke-linecap:round}
+  .tick.maj{stroke:#465a6d;stroke-width:2.5}
+  .tick.zero{stroke:var(--good);stroke-width:3}
+  .lbl{fill:#4a5b6b;font-size:11px;font-weight:600;text-anchor:middle}
+  #needle{fill:var(--txt);transition:transform .09s linear}
+  #fill{stroke:var(--accent);stroke-width:9;fill:none;stroke-linecap:round;opacity:.95}
+  #track{stroke:#18222c;stroke-width:9;fill:none;stroke-linecap:round}
+  #zone{stroke:var(--good);stroke-width:9;fill:none;stroke-linecap:round;opacity:.28}
+  #hub{fill:var(--txt)}
+  .idle #needle,.idle #fill{opacity:.22}
+
+  .readout{text-align:center;margin-top:-14px}
+  .note{font-size:76px;font-weight:700;letter-spacing:-2px;line-height:1;font-variant-numeric:tabular-nums}
+  .note sub{font-size:.34em;font-weight:600;color:var(--dim);letter-spacing:0;vertical-align:.25em;margin-left:2px}
+  .cents{margin-top:6px;font-size:19px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums;min-height:26px}
+  .hz{margin-top:2px;font-size:13px;color:var(--dim);font-variant-numeric:tabular-nums;min-height:18px}
+  .idle .note{color:#3d4c5b}
+  .idle .cents{color:var(--dim);font-weight:600}
+  .idle .hz{opacity:0}
+  .lock{font-size:12px;color:var(--dim);margin-top:4px;min-height:16px}
+
+  .strings{display:flex;gap:6px;margin:14px 0 12px}
+  .chip{
+    flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:12px;
+    padding:9px 2px;text-align:center;color:var(--dim);font-weight:700;font-size:15px;
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+  }
+  .chip small{font-size:10px;font-weight:600;opacity:.65}
+  .chip.active{color:var(--txt);border-color:#3a4d60;background:#18232e}
+  .chip.locked{border-color:var(--good);color:var(--good)}
+  .chip.done{background:rgba(53,208,127,.14);border-color:var(--good);color:var(--good)}
+  .chip .step{display:flex;gap:4px;margin-top:3px}
+  .chip .step button{background:#0f161e;border:1px solid var(--line);color:var(--txt);border-radius:6px;width:24px;height:22px;font-size:11px;line-height:1;padding:0}
+
+  footer{display:flex;flex-direction:column;gap:10px}
+  .row{display:flex;gap:10px}
+  .power{
+    flex:1;background:var(--good);color:#06301c;border:0;border-radius:14px;
+    padding:15px;font-size:16px;font-weight:700;
+  }
+  .power.on{background:#182430;color:var(--txt);box-shadow:inset 0 0 0 1px var(--line)}
+  .ghost{background:#141d26;border:1px solid var(--line);color:var(--dim);border-radius:14px;padding:15px 16px;font-size:15px;font-weight:600}
+  .ghost.on{color:var(--good);border-color:var(--good)}
+  .msg{font-size:13px;color:var(--dim);text-align:center;min-height:34px;line-height:1.35}
+  .msg.err{color:var(--off)}
+  #testbar{display:none;gap:8px;align-items:center;font-size:12px;color:var(--dim)}
+  #testbar.on{display:flex}
+  #testbar input{flex:1}
+  pre#selftest{white-space:pre-wrap;font:11px/1.4 ui-monospace,Menlo,monospace;color:var(--dim);background:#0d141b;border:1px solid var(--line);border-radius:10px;padding:10px;max-height:44vh;overflow:auto}
+</style>
+</head>
+<body>
+<div class="wrap idle" id="root">
+  <header>
+    <select id="tuning" aria-label="Tuning"></select>
+    <div class="ref">
+      <button id="refDown" aria-label="Lower reference pitch">−</button>
+      <span>A<b id="refVal">440</b></span>
+      <button id="refUp" aria-label="Raise reference pitch">+</button>
+    </div>
+  </header>
+
+  <main>
+    <svg id="gauge" viewBox="0 26 320 150" aria-hidden="true">
+      <g id="ticks"></g>
+      <path id="track"></path>
+      <path id="zone"></path>
+      <path id="fill"></path>
+      <polygon id="needle" points="160,52 164.5,160 155.5,160"></polygon>
+      <circle id="hub" cx="160" cy="160" r="6.5"></circle>
+    </svg>
+    <div class="readout">
+      <div class="note" id="note">–</div>
+      <div class="cents" id="cents">Tap start, then play a string</div>
+      <div class="hz" id="hz"></div>
+      <div class="lock" id="lockmsg"></div>
+    </div>
+  </main>
+
+  <div class="strings" id="strings"></div>
+
+  <footer>
+    <div class="row">
+      <button class="power" id="power">Start listening</button>
+      <button class="ghost" id="edit">Edit</button>
+    </div>
+    <div id="testbar">
+      <span>test&nbsp;tone</span>
+      <input id="testfreq" type="range" min="30" max="500" step="0.1" value="73.42">
+      <span id="testval">73.4 Hz</span>
+    </div>
+    <div class="msg" id="msg">Works offline once loaded. Nearest string in the chosen tuning is targeted automatically — tap a string to lock onto it.</div>
+  </footer>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+/* ─────────────────────────── notes & tunings ─────────────────────────── */
+
+const SHARP = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const PC = {C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+
+function nameToMidi(s){
+  const m = /^([A-Ga-g])([#b]?)(-?\d+)$/.exec(s.trim());
+  if(!m) throw new Error('bad note: '+s);
+  const acc = m[2]==='#' ? 1 : m[2]==='b' ? -1 : 0;
+  return (parseInt(m[3],10)+1)*12 + PC[m[1].toUpperCase()] + acc;
+}
+const midiName   = m => SHARP[((m%12)+12)%12];
+const midiOctave = m => Math.floor(m/12) - 1;
+
+const TUNINGS = [
+  {id:'standard', name:'Standard  E A D G B E',   notes:['E2','A2','D3','G3','B3','E4']},
+  {id:'dropd',    name:'Drop D  D A D G B E',     notes:['D2','A2','D3','G3','B3','E4']},
+  {id:'ddropd',   name:'Double Drop D',           notes:['D2','A2','D3','G3','B3','D4']},
+  {id:'eb',       name:'Eb  (half step down)',    notes:['D#2','G#2','C#3','F#3','A#3','D#4']},
+  {id:'dropdb',   name:'Drop Db  (Eb + drop)',    notes:['C#2','G#2','C#3','F#3','A#3','D#4']},
+  {id:'dstd',     name:'D Standard  (whole step)',notes:['D2','G2','C3','F3','A3','D4']},
+  {id:'dropc',    name:'Drop C  C G C F A D',     notes:['C2','G2','C3','F3','A3','D4']},
+  {id:'dropb',    name:'Drop B',                  notes:['B1','F#2','B2','E3','G#3','C#4']},
+  {id:'dropa',    name:'Drop A',                  notes:['A1','E2','A2','D3','F#3','B3']},
+  {id:'dadgad',   name:'DADGAD',                  notes:['D2','A2','D3','G3','A3','D4']},
+  {id:'opend',    name:'Open D',                  notes:['D2','A2','D3','F#3','A3','D4']},
+  {id:'openg',    name:'Open G',                  notes:['D2','G2','D3','G3','B3','D4']},
+  {id:'opene',    name:'Open E',                  notes:['E2','B2','E3','G#3','B3','E4']},
+  {id:'openc',    name:'Open C',                  notes:['C2','G2','C3','G3','C4','E4']},
+  {id:'bass',     name:'Bass  E A D G',           notes:['E1','A1','D2','G2']},
+  {id:'bassdrop', name:'Bass Drop D',             notes:['D1','A1','D2','G2']},
+  {id:'bass5',    name:'Bass 5-string  B E A D G',notes:['B0','E1','A1','D2','G2']},
+  {id:'uke',      name:'Ukulele  G C E A',        notes:['G4','C4','E4','A4']},
+  {id:'chromatic',name:'Chromatic  (no target)',  notes:[]},
+];
+
+/* ─────────────────────────────── state ──────────────────────────────── */
+
+const LS = 'droptuner.v1';
+const state = {
+  tuningId : 'dropd',
+  strings  : [],        // midi numbers, low → high
+  ref      : 440,
+  locked   : -1,        // index of locked string, -1 = auto
+  editing  : false,
+};
+
+function loadPrefs(){
+  try{
+    const p = JSON.parse(localStorage.getItem(LS) || '{}');
+    if(p.tuningId) state.tuningId = p.tuningId;
+    if(p.ref) state.ref = p.ref;
+    if(Array.isArray(p.custom) && p.custom.length) state.custom = p.custom;
+  }catch(e){/* first run */}
+}
+function savePrefs(){
+  try{
+    localStorage.setItem(LS, JSON.stringify({
+      tuningId: state.tuningId, ref: state.ref,
+      custom: state.tuningId==='custom' ? state.strings : state.custom
+    }));
+  }catch(e){/* private mode */}
+}
+
+const freqOf = m => state.ref * Math.pow(2, (m - 69) / 12);
+const centsBetween = (f, m) => 1200 * Math.log2(f / freqOf(m));
+
+/* ───────────────────────── pitch detection (MPM) ─────────────────────── */
+/* McLeod Pitch Method: normalised square difference + first key maximum.
+   The "first key maximum" rule is what stops a fat low E from reading an
+   octave down, which is exactly where naive autocorrelation falls over.   */
+
+let MIN_HZ = 60, MAX_HZ = 900;
+
+function setRange(){
+  if(!state.strings.length){ MIN_HZ = 27; MAX_HZ = 1250; return; }
+  MIN_HZ = Math.max(24, freqOf(state.strings[0]) * 0.60);
+  MAX_HZ = Math.min(1400, freqOf(state.strings[state.strings.length-1]) * 2.6);
+  if(lp1){ const c = Math.min(3000, Math.max(500, MAX_HZ*1.5)); lp1.frequency.value = c; lp2.frequency.value = c; }
+  if(hp){ hp.frequency.value = Math.max(20, MIN_HZ*0.75); }
+}
+
+function decimate(src, factor){
+  const n = Math.floor(src.length / factor);
+  const out = new Float32Array(n);
+  for(let i=0;i<n;i++){
+    let s = 0, b = i*factor;
+    for(let k=0;k<factor;k++) s += src[b+k];   // boxcar = free anti-alias filter
+    out[i] = s / factor;
+  }
+  return out;
+}
+
+/* Real strings are inharmonic: partial n sits at n*f0*sqrt(1+B*n^2), so a
+   period estimate fitted to the whole harmonic stack lands a few cents sharp
+   of the fundamental you are actually tuning. MPM gets us the right octave and
+   a rough period; this measures the fundamental partial itself by comparing the
+   phase of two overlapping windows, which is immune to the stretch above it.  */
+let hann = null, hannLen = 0;
+function refine(x, sr, f0, rms){
+  const n = x.length, D = n >> 1, L = n - D;
+  if(L < 64) return f0;
+  if(hannLen !== L){                                // taper kills leakage from the
+    hann = new Float32Array(L);                     // 2nd partial, which otherwise
+    for(let j=0;j<L;j++)                            // drags low notes flat when only
+      hann[j] = 0.5 - 0.5*Math.cos(2*Math.PI*j/(L-1));   // ~3 cycles fit the window
+    hannLen = L;
+  }
+  const w = 2*Math.PI*f0/sr;
+  let r1=0,i1=0,r2=0,i2=0;
+  for(let j=0;j<L;j++){
+    const c = Math.cos(w*j), s = Math.sin(w*j), g = hann[j];
+    const a = x[j]*g, b = x[j+D]*g;
+    r1 += a*c; i1 -= a*s;
+    r2 += b*c; i2 -= b*s;
+  }
+  const m1 = Math.hypot(r1,i1), m2 = Math.hypot(r2,i2);
+  if(m1 <= 0 || m2 <= 0) return f0;
+  if((4*Math.min(m1,m2)/L) < 0.12*rms) return f0;   // fundamental too weak to trust
+
+  let d = Math.atan2(i2*r1 - r2*i1, r2*r1 + i2*i1) - w*D;   // arg(z2 * conj(z1)) - expected
+  d = ((d + Math.PI) % (2*Math.PI) + 2*Math.PI) % (2*Math.PI) - Math.PI;
+  const f = f0 + d*sr/(2*Math.PI*D);
+  if(!(f > 0) || Math.abs(1200*Math.log2(f/f0)) > 35) return f0;   // implausible, keep MPM
+  return f;
+}
+
+function detect(x, sr){
+  const n = x.length;
+  let energy = 0;
+  for(let i=0;i<n;i++) energy += x[i]*x[i];
+  const rms = Math.sqrt(energy/n);
+  if(rms < 0.0035) return null;                 // silence gate
+
+  const maxLag = Math.min(Math.floor(sr/MIN_HZ), n-2);
+  const minLag = Math.max(2, Math.floor(sr/MAX_HZ));
+  if(maxLag <= minLag+2) return null;
+
+  const nsdf = new Float32Array(maxLag+2);
+  for(let tau=minLag; tau<=maxLag; tau++){
+    let acf=0, m=0;
+    const lim = n-tau;
+    for(let j=0;j<lim;j++){
+      const a=x[j], b=x[j+tau];
+      acf += a*b;
+      m   += a*a + b*b;
+    }
+    nsdf[tau] = m>0 ? (2*acf)/m : 0;
+  }
+
+  // collect key maxima: peak of each positive lobe
+  let tau = minLag, best = -1, bestVal = -1;
+  const peaks = [];
+  while(tau<=maxLag && nsdf[tau] > 0) tau++;      // clear the tau≈0 lobe
+  while(tau<=maxLag){
+    while(tau<=maxLag && nsdf[tau] <= 0) tau++;
+    if(tau>maxLag) break;
+    let pT=tau, pV=nsdf[tau];
+    while(tau<=maxLag && nsdf[tau] > 0){
+      if(nsdf[tau] > pV){ pV = nsdf[tau]; pT = tau; }
+      tau++;
+    }
+    peaks.push([pT,pV]);
+    if(pV > bestVal){ bestVal = pV; best = pT; }
+  }
+  if(!peaks.length || bestVal < 0.55) return null;   // no clear periodicity
+
+  const thresh = bestVal * 0.9;
+  let chosen = best;
+  for(const [t,v] of peaks){ if(v >= thresh){ chosen = t; break; } }
+
+  // parabolic interpolation for sub-sample period accuracy
+  let period = chosen;
+  if(chosen > minLag && chosen < maxLag){
+    const y1 = nsdf[chosen-1], y2 = nsdf[chosen], y3 = nsdf[chosen+1];
+    const d = y1 - 2*y2 + y3;
+    if(d !== 0){
+      const shift = (y1 - y3) / (2*d);
+      if(Math.abs(shift) < 1) period = chosen + shift;
+    }
+  }
+  const rough = sr/period;
+  return { freq: refine(x, sr, rough, rms), rough, clarity: nsdf[chosen], rms };
+}
+
+/* ─────────────────────────── audio plumbing ─────────────────────────── */
+
+const FFT = 8192;
+let ctx=null, analyser=null, hp=null, lp1=null, lp2=null, stream=null, osc=null;
+let raw=null, decFactor=6, decRate=8000, raf=0, lastRun=0, running=false;
+
+function buildChain(){
+  hp  = ctx.createBiquadFilter(); hp.type='highpass';  hp.frequency.value=45;  hp.Q.value=0.7;
+  lp1 = ctx.createBiquadFilter(); lp1.type='lowpass';  lp1.frequency.value=1600; lp1.Q.value=0.7;
+  lp2 = ctx.createBiquadFilter(); lp2.type='lowpass';  lp2.frequency.value=1600; lp2.Q.value=0.7;
+  analyser = ctx.createAnalyser();
+  analyser.fftSize = FFT;
+  analyser.smoothingTimeConstant = 0;
+  hp.connect(lp1).connect(lp2).connect(analyser);
+  raw = new Float32Array(FFT);
+  decFactor = Math.max(1, Math.round(ctx.sampleRate / 8000));
+  decRate   = ctx.sampleRate / decFactor;
+  setRange();
+}
+
+async function start(){
+  try{
+    msg('');
+    if(!ctx){
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) throw new Error('NoWebAudio');
+      ctx = new AC();
+      buildChain();
+    }
+    await ctx.resume();
+
+    if(TEST){
+      osc = ctx.createOscillator();
+      osc.type = 'sawtooth';
+      osc.frequency.value = parseFloat(testfreq.value);
+      const g = ctx.createGain(); g.gain.value = 0.35;
+      osc.connect(g).connect(hp);
+      osc.start();
+    } else {
+      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+        throw new Error(location.protocol === 'https:' || location.hostname === 'localhost'
+          ? 'NoMic' : 'Insecure');
+      }
+      stream = await navigator.mediaDevices.getUserMedia({ audio:{
+        echoCancellation:false, noiseSuppression:false, autoGainControl:false, channelCount:1
+      }});
+      ctx.createMediaStreamSource(stream).connect(hp);
+    }
+
+    running = true;
+    power.textContent = 'Stop';
+    power.classList.add('on');
+    keepAwake();
+    lastRun = 0;
+    raf = requestAnimationFrame(loop);
+    msg(TEST ? 'Test-tone mode — drag the slider, no mic used.' : '');
+  }catch(err){
+    stop();
+    const n = err && (err.name || err.message);
+    if(n === 'NotAllowedError' || n === 'SecurityError')
+      msg('Microphone blocked. Allow it in Settings → Safari → Microphone, then reload.', true);
+    else if(n === 'NotFoundError' || n === 'NoMic')
+      msg('No microphone found on this device.', true);
+    else if(n === 'Insecure')
+      msg('Microphone needs HTTPS. Open this page over https:// (or localhost).', true);
+    else if(n === 'NoWebAudio')
+      msg('This browser has no Web Audio support.', true);
+    else
+      msg('Could not start audio: ' + n, true);
+  }
+}
+
+function stop(){
+  running = false;
+  cancelAnimationFrame(raf);
+  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream = null; }
+  if(osc){ try{osc.stop();}catch(e){} osc.disconnect(); osc = null; }
+  if(ctx) ctx.suspend();
+  releaseWake();
+  power.textContent = 'Start listening';
+  power.classList.remove('on');
+  root.classList.add('idle');
+  note.innerHTML = '\u2013';
+  cents.textContent = 'Tap start, then play a string';
+  hz.textContent = '';
+  setAccent('--off');
+  render(0);
+  paintStrings(-1, false);
+}
+
+let wake = null;
+async function keepAwake(){
+  try{ if('wakeLock' in navigator) wake = await navigator.wakeLock.request('screen'); }catch(e){}
+}
+function releaseWake(){ try{ wake && wake.release(); }catch(e){} wake = null; }
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible' && running && !wake) keepAwake();
+});
+
+/* ──────────────────────────── detect loop ───────────────────────────── */
+
+let smoothLog = null, lastSeen = 0, inTuneSince = 0;
+
+function loop(now){
+  raf = requestAnimationFrame(loop);
+  if(now - lastRun < 40) return;                 // ~25 Hz is plenty
+  lastRun = now;
+
+  analyser.getFloatTimeDomainData(raw);
+  const res = detect(decimate(raw, decFactor), decRate);
+
+  if(!res){
+    if(now - lastSeen > 1200){ root.classList.add('idle'); if(!TEST) hz.textContent=''; }
+    return;
+  }
+  lastSeen = now;
+  root.classList.remove('idle');
+
+  const lf = Math.log2(res.freq);
+  if(smoothLog === null || Math.abs(lf - smoothLog) > 0.08) smoothLog = lf;   // snap on big jumps
+  else smoothLog += (lf - smoothLog) * 0.3;
+  const f = Math.pow(2, smoothLog);
+
+  // pick target: locked string > nearest string in tuning > nearest chromatic note
+  let target, idx = -1;
+  if(state.locked >= 0 && state.locked < state.strings.length){
+    idx = state.locked; target = state.strings[idx];
+  } else if(state.strings.length){
+    let bestD = Infinity;
+    state.strings.forEach((m,i) => {
+      const d = Math.abs(centsBetween(f, m));
+      if(d < bestD){ bestD = d; idx = i; target = m; }
+    });
+  } else {
+    target = Math.round(69 + 12*Math.log2(f/state.ref));
+  }
+
+  const c = centsBetween(f, target);
+  const abs = Math.abs(c);
+  setAccent(abs <= 5 ? '--good' : abs <= 18 ? '--near' : '--off');
+
+  note.innerHTML = midiName(target) + '<sub>' + midiOctave(target) + '</sub>';
+  hz.textContent = f.toFixed(2) + ' Hz  ·  target ' + freqOf(target).toFixed(2) + ' Hz';
+
+  if(abs > 55){
+    cents.textContent = (c < 0 ? '▼▼  way flat' : '▲▲  way sharp') + '   ' + Math.round(c) + ' ¢';
+  } else if(abs <= 5){
+    cents.textContent = '✓  in tune   ' + (c>=0?'+':'') + Math.round(c) + ' ¢';
+  } else {
+    cents.textContent = (c < 0 ? '▼ tune up  ' : '▲ tune down  ') + (c>=0?'+':'') + Math.round(c) + ' ¢';
+  }
+
+  if(abs <= 5){ if(!inTuneSince) inTuneSince = now; } else inTuneSince = 0;
+  render(Math.max(-50, Math.min(50, c)));
+  paintStrings(idx, inTuneSince && now - inTuneSince > 350);
+}
+
+/* ────────────────────────────── gauge ───────────────────────────────── */
+
+const CX = 160, CY = 160, R = 122, DEG_PER_CENT = 1.2;
+
+function pol(c, r){
+  const t = c * DEG_PER_CENT * Math.PI / 180;
+  return [CX + r*Math.sin(t), CY - r*Math.cos(t)];
+}
+function arc(c1, c2, r){
+  if(Math.abs(c2-c1) < 0.05) c2 = c1 + 0.05;
+  const [x1,y1] = pol(c1,r), [x2,y2] = pol(c2,r);
+  return `M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r} ${r} 0 0 ${c2>c1?1:0} ${x2.toFixed(2)} ${y2.toFixed(2)}`;
+}
+function buildGauge(){
+  let s = '';
+  for(let c=-50;c<=50;c+=5){
+    const maj = c % 25 === 0, zero = c === 0;
+    const len = zero ? 20 : maj ? 15 : 9;
+    const [x1,y1] = pol(c, R-13), [x2,y2] = pol(c, R-13-len);
+    s += `<line class="tick${zero?' zero':maj?' maj':''}" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`;
+    if(maj && !zero){
+      const [lx,ly] = pol(c, R-44);
+      s += `<text class="lbl" x="${lx.toFixed(1)}" y="${(ly+4).toFixed(1)}">${c>0?'+':''}${c}</text>`;
+    }
+  }
+  ticks.innerHTML = s;
+  track.setAttribute('d', arc(-50, 50, R));
+  zone.setAttribute('d', arc(-5, 5, R));
+  render(0);
+}
+function render(c){
+  fill.setAttribute('d', arc(0, c, R));
+  needle.setAttribute('transform', `rotate(${(c*DEG_PER_CENT).toFixed(2)} ${CX} ${CY})`);
+}
+function setAccent(v){ document.documentElement.style.setProperty('--accent', `var(${v})`); }
+
+/* ───────────────────────────── UI wiring ────────────────────────────── */
+
+const $ = id => document.getElementById(id);
+const root=$('root'), note=$('note'), cents=$('cents'), hz=$('hz'), lockmsg=$('lockmsg'),
+      ticks=$('ticks'), track=$('track'), zone=$('zone'), fill=$('fill'), needle=$('needle'),
+      power=$('power'), edit=$('edit'), stringsEl=$('strings'), msgEl=$('msg'),
+      tuningSel=$('tuning'), refVal=$('refVal'), testbar=$('testbar'),
+      testfreq=$('testfreq'), testval=$('testval');
+
+function msg(t, isErr){ msgEl.textContent = t; msgEl.classList.toggle('err', !!isErr); }
+
+function applyTuning(id){
+  state.tuningId = id;
+  if(id === 'custom' && state.custom) state.strings = state.custom.slice();
+  else {
+    const t = TUNINGS.find(t=>t.id===id) || TUNINGS[0];
+    state.strings = t.notes.map(nameToMidi);
+  }
+  state.locked = -1;
+  setRange();
+  buildStrings();
+  savePrefs();
+}
+
+function buildStrings(){
+  stringsEl.innerHTML = '';
+  state.strings.forEach((m,i) => {
+    const el = document.createElement('div');
+    el.className = 'chip';
+    el.dataset.i = i;
+    el.innerHTML = `<span>${midiName(m)}<small>${midiOctave(m)}</small></span>` +
+      (state.editing ? `<div class="step"><button data-d="-1">♭</button><button data-d="1">♯</button></div>`
+                     : `<small>${freqOf(m).toFixed(1)}</small>`);
+    el.addEventListener('click', ev => {
+      const b = ev.target.closest('button');
+      if(b){
+        state.strings[i] = m + parseInt(b.dataset.d,10);
+        state.custom = state.strings.slice();
+        state.tuningId = 'custom';
+        if(!tuningSel.querySelector('[value="custom"]')){
+          const o = document.createElement('option');
+          o.value='custom'; o.textContent='Custom'; tuningSel.appendChild(o);
+        }
+        tuningSel.value = 'custom';
+        setRange(); buildStrings(); savePrefs();
+        return;
+      }
+      state.locked = state.locked === i ? -1 : i;
+      lockmsg.textContent = state.locked === i
+        ? 'Locked to string ' + (state.strings.length - i) + ' — tap again for auto'
+        : '';
+      paintStrings(state.locked, false);
+    });
+    stringsEl.appendChild(el);
+  });
+  paintStrings(state.locked, false);
+}
+
+function paintStrings(active, done){
+  [...stringsEl.children].forEach((el,i) => {
+    el.classList.toggle('active', i === active);
+    el.classList.toggle('locked', i === state.locked);
+    el.classList.toggle('done', !!done && i === active);
+  });
+}
+
+TUNINGS.forEach(t => {
+  const o = document.createElement('option');
+  o.value = t.id; o.textContent = t.name;
+  tuningSel.appendChild(o);
+});
+
+loadPrefs();
+if(state.custom){
+  const o = document.createElement('option');
+  o.value='custom'; o.textContent='Custom'; tuningSel.appendChild(o);
+}
+refVal.textContent = state.ref;
+applyTuning(state.tuningId);
+tuningSel.value = state.tuningId;
+buildGauge();
+
+tuningSel.addEventListener('change', () => { applyTuning(tuningSel.value); lockmsg.textContent=''; });
+power.addEventListener('click', () => running ? stop() : start());
+edit.addEventListener('click', () => {
+  state.editing = !state.editing;
+  edit.classList.toggle('on', state.editing);
+  edit.textContent = state.editing ? 'Done' : 'Edit';
+  msg(state.editing ? 'Nudge any string ♭ / ♯ a semitone to build your own tuning. It is remembered on this device.' : '');
+  buildStrings();
+});
+function bumpRef(d){
+  state.ref = Math.min(466, Math.max(415, state.ref + d));
+  refVal.textContent = state.ref;
+  setRange(); buildStrings(); savePrefs();
+}
+$('refDown').addEventListener('click', () => bumpRef(-1));
+$('refUp').addEventListener('click', () => bumpRef(1));
+
+/* ───────────────────── test tone + self test (dev) ──────────────────── */
+
+const params = new URLSearchParams(location.search);
+const TEST = params.has('test');
+if(TEST){
+  testbar.classList.add('on');
+  testfreq.addEventListener('input', () => {
+    testval.textContent = parseFloat(testfreq.value).toFixed(1) + ' Hz';
+    if(osc) osc.frequency.value = parseFloat(testfreq.value);
+  });
+}
+
+function synth(freq, sr, len, fundGain, B){
+  B = B === undefined ? 1e-4 : B;   // ~plain steel string; wound strings are lower
+  const x = new Float32Array(len);
+  for(let h=1; h<=10; h++){
+    const a = (h===1 ? fundGain : 1) / h;
+    const inh = freq * h * Math.sqrt(1 + B*h*h);  // real string inharmonicity
+    if(inh > sr/2) break;
+    const w = 2*Math.PI*inh/sr, ph = h*0.7;
+    for(let i=0;i<len;i++) x[i] += a * Math.sin(w*i + ph);
+  }
+  let peak = 0;
+  for(let i=0;i<len;i++) peak = Math.max(peak, Math.abs(x[i]));
+  for(let i=0;i<len;i++) x[i] = x[i]/peak*0.5 + (Math.sin(i*12.9898)*43758.5453 % 1) * 0.004;
+  return x;
+}
+
+function runSelfTest(){
+  const sr = 48000, D = 6, dr = sr/D;
+  const cases = [];
+  const push = (label, notes, fund, B) => notes.forEach(n => cases.push({label, n, fund, B}));
+  push('drop D',    ['D2','A2','D3','G3','B3','E4'], 1);
+  push('drop C',    ['C2','G2','C3','F3','A3','D4'], 1);
+  push('bass 5',    ['B0','E1','A1','D2','G2'],      1, 2.5e-5);   // wound
+  push('stiff str', ['E2','B3','E4'],                1, 2.0e-4);   // worst-case stiff
+  push('weak fund', ['E2','A2','D3'],                0.2);
+  push('detuned',   ['D2','G3'],                     1);
+
+  const savedStrings = state.strings.slice();
+  const out = [];
+  let worst = 0, fails = 0;
+
+  for(const c of cases){
+    const m = nameToMidi(c.n);
+    const detune = c.label === 'detuned' ? -37 : 0;         // cents off target
+    const f0 = freqOf(m) * Math.pow(2, detune/1200);
+    state.strings = c.label === 'bass 5'
+      ? ['B0','E1','A1','D2','G2'].map(nameToMidi)
+      : ['C2','A2','D3','G3','B3','E4'].map(nameToMidi);
+    setRange();
+    const x = decimate(synth(f0, sr, 8192, c.fund, c.B), D);
+    const r = detect(x, dr);
+    if(!r){ out.push(`FAIL  ${c.label.padEnd(10)} ${c.n.padEnd(4)} → no detection`); fails++; continue; }
+    const err = 1200*Math.log2(r.freq/f0);
+    worst = Math.max(worst, Math.abs(err));
+    const bad = Math.abs(err) > 1.5;
+    if(bad) fails++;
+    out.push(`${bad?'FAIL':'ok  '}  ${c.label.padEnd(10)} ${c.n.padEnd(4)} want ${f0.toFixed(2).padStart(7)}Hz  got ${r.freq.toFixed(2).padStart(7)}Hz  err ${err.toFixed(2).padStart(6)}¢  clarity ${r.clarity.toFixed(3)}`);
+  }
+  state.strings = savedStrings; setRange();
+
+  const summary = `${cases.length - fails}/${cases.length} passed · worst error ${worst.toFixed(2)} cents`;
+  const pre = document.createElement('pre');
+  pre.id = 'selftest';
+  pre.textContent = summary + '\n\n' + out.join('\n');
+  document.querySelector('footer').appendChild(pre);
+  window.__selftest = { pass: fails === 0, fails, total: cases.length, worst, lines: out };
+  console.log('[selftest]', summary);
+}
+if(params.has('selftest')) runSelfTest();
+
+/* ───────────────────────── offline service worker ───────────────────── */
+if('serviceWorker' in navigator && location.protocol === 'https:'){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+})();
+</script>
+</body>
+</html>
