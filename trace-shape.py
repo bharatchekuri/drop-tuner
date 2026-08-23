@@ -11,10 +11,18 @@ holes - the tuner holes and inlays - as centre/radius.
 import sys, zlib, subprocess, os, math, tempfile
 from collections import deque
 
-def to_png(src):
+def to_png(src, upscale=1):
+    """Upscaling first gives sub-pixel edge positions: sips interpolates, so the
+    threshold lands on the true edge instead of snapping to a whole source pixel.
+    That is what turns a low-res diagonal from a staircase into a straight line."""
     out = os.path.join(tempfile.mkdtemp(), 'trace.png')
-    subprocess.run(['sips', '-s', 'format', 'png', src, '--out', out],
-                   check=True, capture_output=True)      # no resample: keep every pixel
+    args = ['sips', '-s', 'format', 'png']
+    if upscale > 1:
+        g = subprocess.run(['sips', '-g', 'pixelWidth', '-g', 'pixelHeight', src],
+                           check=True, capture_output=True, text=True).stdout
+        dims = [int(t.split(':')[1]) for t in g.split(chr(10)) if 'pixel' in t]
+        args += ['-Z', str(max(dims)*upscale)]
+    subprocess.run(args + [src, '--out', out], check=True, capture_output=True)
     return out
 
 def read_png(path):
@@ -203,9 +211,10 @@ def main():
     src = a[0]
     invert  = '--invert' in a
     eps     = float(a[a.index('--eps')+1])    if '--eps'    in a else 0.8
+    up      = int(a[a.index('--upscale')+1])  if '--upscale' in a else 1
     targetH = float(a[a.index('--height')+1]) if '--height' in a else 300.0
 
-    w, h, ch, st, rows = read_png(to_png(src))
+    w, h, ch, st, rows = read_png(to_png(src, up))
     L, A = luma_alpha(rows, w, ch, st)
     thr = otsu(L, A)
     mask = [[1 if (A[y][x] > 128 and ((L[y][x] > thr) if invert else (L[y][x] < thr))) else 0
