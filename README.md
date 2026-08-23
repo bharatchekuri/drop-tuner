@@ -48,13 +48,12 @@ shortcut — it will then open in a normal Safari tab, where the mic always work
 - Play a string. The nearest string **in that tuning** is targeted automatically,
   so while you drop the low E down to D it keeps pointing at D rather than
   flipping to Eb the way a plain chromatic tuner does.
-- Tap a string chip to lock onto it; tap again to go back to auto.
-- **Edit** nudges any string ♭/♯ a semitone to build a tuning that isn't listed.
-- **Reference pitch** lives behind **Edit** (415-466 Hz, with a reset). It is a
-  set-once control, so it stays out of the way - but any value other than 440
-  shows as an amber `A44x` badge in the header, since otherwise every target
-  would look inexplicably wrong.
-- Green means within ±5 cents.
+- The **headstock** view shows which peg to turn - the string, its tuner button
+  and its peg hole all light up together. **Headstock** toggles it off for a
+  compact row of string chips instead.
+- Tap a string (label or chip) to lock onto it; tap again to go back to auto.
+- Green means within +/-5 cents.
+- Reference pitch is fixed at A440.
 
 ## How the pitch detection works
 
