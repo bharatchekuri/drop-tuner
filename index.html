@@ -51,8 +51,8 @@
   .ref span{font-size:13px;font-variant-numeric:tabular-nums;color:var(--dim);min-width:56px;text-align:center}
   .ref span b{color:var(--txt);font-weight:600}
 
-  main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
-  svg#gauge{width:100%;max-width:360px;display:block}
+  main{flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
+  svg#gauge{width:100%;max-width:min(360px,80vw);max-height:21dvh;display:block}
   .tick{stroke:#553c22;stroke-width:2;stroke-linecap:round}
   .tick.maj{stroke:#7a5c3a;stroke-width:2.5}
   .tick.zero{stroke:var(--good);stroke-width:3}
@@ -64,17 +64,17 @@
   #hub{fill:var(--txt)}
   .idle #needle,.idle #fill{opacity:.22}
 
-  .readout{text-align:center;margin-top:-14px}
-  .note{font-size:76px;font-weight:700;letter-spacing:-2px;line-height:1;font-variant-numeric:tabular-nums}
+  .readout{text-align:center;margin-top:-10px}
+  .note{font-size:clamp(42px,7.6dvh,72px);font-weight:700;letter-spacing:-2px;line-height:1;font-variant-numeric:tabular-nums}
   .note sub{font-size:.34em;font-weight:600;color:var(--dim);letter-spacing:0;vertical-align:.25em;margin-left:2px}
-  .cents{margin-top:6px;font-size:19px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums;min-height:26px}
+  .cents{margin-top:5px;font-size:18px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums;min-height:26px}
   .hz{margin-top:2px;font-size:13px;color:var(--dim);font-variant-numeric:tabular-nums;min-height:18px}
   .idle .note{color:#5c452e}
   .idle .cents{color:var(--dim);font-weight:600}
   .idle .hz{opacity:0}
   .lock{font-size:12px;color:var(--dim);margin-top:4px;min-height:16px}
 
-  .strings{display:flex;gap:5px;margin:14px 0 12px}
+  .strings{display:flex;gap:5px;margin:12px 0 10px;flex:0 0 auto}
   .chip{
     flex:1;min-width:0;background:var(--bg2);border:1px solid var(--line);border-radius:12px;
     padding:9px 2px;text-align:center;color:var(--dim);font-weight:700;font-size:15px;
@@ -86,25 +86,25 @@
   .chip.done{background:rgba(53,208,127,.14);border-color:var(--good);color:var(--good)}
 
   /* ── headstock view ───────────────────────────────────────────────── */
-  .head{display:none;width:100%;max-width:252px;max-height:34dvh;height:auto;margin:10px auto 8px}
+  .head{display:none;flex:0 0 auto;width:100%;max-width:236px;max-height:22dvh;height:auto;margin:10px auto 8px}
   body.headstock .head{display:block}
   body.headstock .strings{display:none}
-  .hs-body{fill:#9a613b;stroke:none}
-  .hs-tab{fill:#9a613b}
-  .hs-hole{fill:#f4e8d4}
-  .hs-str{stroke:#f4e8d4;stroke-width:2.4;fill:none;stroke-linejoin:round}
+  .hs-body,.hs-board{fill:#120b06;stroke:#efe2cd;stroke-width:2.5;stroke-linejoin:round}
+  .hs-tab{fill:#1c1209;stroke:#efe2cd;stroke-width:2}
+  .hs-hole{fill:#0c0704;stroke:#efe2cd;stroke-width:2}
+  .hs-str{stroke:#efe2cd;stroke-width:1.9;fill:none;stroke-linejoin:round}
   .hs-lbl{cursor:pointer}
   .hs-lbl circle{fill:var(--bg2);stroke:var(--line);stroke-width:1.5}
-  .hs-lbl text{fill:var(--dim);font-size:16px;font-weight:700;text-anchor:middle;dominant-baseline:middle}
-  .hs-lbl tspan{font-size:11px;fill:var(--dim);opacity:.8}
+  .hs-lbl text{fill:var(--dim);font-size:13px;font-weight:700;text-anchor:middle;dominant-baseline:middle}
+  .hs-lbl tspan{font-size:9px;fill:var(--dim);opacity:.8}
   .hs-lbl.locked circle{stroke:var(--good)}
   .hs-lbl.active circle{fill:#2c1b0d;stroke:var(--accent);stroke-width:2.6}
   .hs-lbl.active text{fill:var(--txt)}
   .hs-lbl.done circle{fill:rgba(53,208,127,.20);stroke:var(--good)}
   .hs-lbl.done text,.hs-lbl.done tspan{fill:var(--good)}
-  .hs-str.active{stroke:var(--accent);stroke-width:3.4}
-  .hs-hole.active{fill:#f4e8d4;stroke:var(--accent);stroke-width:3.5}
-  .hs-tab.active{fill:var(--accent)}
+  .hs-str.active{stroke:var(--accent);stroke-width:3.2}
+  .hs-hole.active{stroke:var(--accent);stroke-width:3}
+  .hs-tab.active{stroke:var(--accent);fill:#2c1b0d}
   body.photo .hs-lbl circle{fill:rgba(32,20,11,.62);stroke:rgba(255,255,255,.18)}
   .subrow{gap:8px}
   .subrow .ghost{flex:1;padding:13px 6px;font-size:14px}
@@ -118,7 +118,7 @@
   .power.on{background:#241708;color:var(--txt);box-shadow:inset 0 0 0 1px var(--line)}
   .ghost{background:#1a1209;border:1px solid var(--line);color:var(--dim);border-radius:14px;padding:15px 16px;font-size:15px;font-weight:600}
   .ghost.on{color:var(--good);border-color:var(--good)}
-  .msg{font-size:13px;color:var(--dim);text-align:center;min-height:34px;line-height:1.35}
+  .msg{font-size:12px;color:var(--dim);text-align:center;min-height:0;line-height:1.35}
   .msg.err{color:var(--off)}
   /* ── photo background ─────────────────────────────────────────────── */
   #bg,#scrim{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .35s}
@@ -616,81 +616,64 @@ function buildStrings(){
   paintStrings(state.locked, false);
 }
 
-/* ── headstock view ──────────────────────────────────────────────────────
-   Pegs are split 3+3 the way a real slotted headstock is: viewed from the
-   front the low strings run up the left side, so the left column reads
-   D-A-E downward. Splits sensibly for 4- and 5-string instruments too.    */
-const NUT_Y = 258, POST_L = 153, POST_R = 187;
-
-function headSides(n){
-  const per = Math.ceil(n/2), left = [], right = [];
-  for(let i = per-1; i >= 0; i--) left.push(i);
-  for(let i = per; i < n; i++) right.push(i);
-  return { left, right };
-}
-
+/* ── headstock view ─────────────────────────────────────────────────────
+   Pointed in-line headstock, drawn as an outline: every tuner rides one swept
+   edge and the body runs out to a sharp tip. All geometry derives from that
+   edge and the string count, so it stretches correctly for 4-string bass and
+   ukulele as well as a 6-string.                                          */
 function buildHead(){
   const n = state.strings.length;
   if(!n){ head.innerHTML = ''; return; }
-  const { left, right } = headSides(n);
-  const rows = Math.max(left.length, right.length);
 
-  const CX = 170, TOP = 16;
-  const wTop = 24, wMax = 58, wNut = 33;
-  const yFlare = TOP + 66;
-  const gap    = rows > 2 ? 54 : 68;
-  const pegTop = yFlare + 22;
-  const stagger = 12;                                   // right column rides higher
-  const NUT_Y  = pegTop + (rows-1)*gap + 74;
-  const BOARD  = NUT_Y + 64;
-  const halfW  = y => y <= yFlare
-    ? wTop + (wMax-wTop)*Math.min(1,(y-TOP)/(yFlare-TOP))
-    : wMax + (wNut-wMax)*Math.min(1,(y-yFlare)/(NUT_Y-yFlare));
-  const yL = k => pegTop + k*gap;
-  const yR = k => pegTop + k*gap - stagger;
-  const holeX  = isLeft => isLeft ? CX-27 : CX+27;
-  const nutX   = i => n === 1 ? CX : CX - 23 + i*(46/(n-1));
+  const CX = 176, NUT_Y = 300, NUT_HALF = 27, BOARD = NUT_Y + 60;
+  const STEP = 41, LEAD = 34, TAIL = 52, IN = 30;
+  const ux = 0.469, uy = -0.883;          // along the headstock: up and to the right
+  const nx = 0.883, ny = 0.469;           // inward normal, into the body
+  const HEELx = CX - NUT_HALF - 26, HEELy = NUT_Y - 30;   // flare below the first tuner
+  const E0x = HEELx, E0y = HEELy;
+  const L = LEAD + (n-1)*STEP + TAIL;
+  const endX = E0x + ux*L, endY = E0y + uy*L;
+  const tipX = endX + nx*38 + ux*18, tipY = endY + ny*38 + uy*18;
+
+  const peg  = i => { const a = LEAD + i*STEP;
+                      return [E0x + ux*a + nx*IN, E0y + uy*a + ny*IN]; };
+  const out  = (p, d) => [p[0] - nx*d, p[1] - ny*d];
+  const nutX = i => n === 1 ? CX : CX - 23 + i*(46/(n-1));
+  const ANG  = Math.atan2(-ny, -nx) * 180/Math.PI;
+  const f    = v => (Math.round(v*10)/10);
 
   let s = '';
-  // open-book silhouette: dip at the crown, flared shoulders, taper into the nut
-  s += `<path class="hs-body" d="M ${CX} ${TOP+15}
-      C ${CX-13} ${TOP+2},  ${CX-31} ${TOP},    ${CX-45} ${TOP+7}
-      C ${CX-58} ${TOP+14}, ${CX-wMax} ${TOP+32}, ${CX-wMax} ${yFlare}
-      C ${CX-wMax} ${yFlare+58}, ${CX-49} ${NUT_Y-64}, ${CX-wNut} ${NUT_Y}
-      L ${CX+wNut} ${NUT_Y}
-      C ${CX+49} ${NUT_Y-64}, ${CX+wMax} ${yFlare+58}, ${CX+wMax} ${yFlare}
-      C ${CX+wMax} ${TOP+32}, ${CX+58} ${TOP+14}, ${CX+45} ${TOP+7}
-      C ${CX+31} ${TOP},     ${CX+13} ${TOP+2},  ${CX} ${TOP+15} Z"/>`;
-  s += `<rect class="hs-body" x="${CX-wNut+3}" y="${NUT_Y-2}" width="${2*wNut-6}" height="${BOARD-NUT_Y+2}"/>`;
+  s += `<rect class="hs-board" x="${CX-NUT_HALF+5}" y="${NUT_Y-1}" width="${2*NUT_HALF-10}" height="${BOARD-NUT_Y+1}"/>`;
+  // bass edge carries the tuners; a short facet turns it into the point, then the
+  // treble edge sweeps back to the nut with a slight concave curve
+  s += `<path class="hs-body" d="M ${CX-NUT_HALF} ${NUT_Y} L ${f(HEELx)} ${f(HEELy)} L ${f(endX)} ${f(endY)}`
+     + ` L ${f(tipX)} ${f(tipY)}`
+     + ` Q ${f(tipX-10)} ${f(tipY + (NUT_Y-tipY)*0.42)} ${CX+NUT_HALF} ${NUT_Y} Z"/>`;
 
-  // tuner buttons on the outside edge
-  const tab = (i, y, isLeft) => {
-    const w = halfW(y), x = isLeft ? CX-w-14 : CX+w-9;
-    return `<rect class="hs-tab" data-hi="${i}" x="${x}" y="${y-8}" width="23" height="15" rx="3"/>`;
-  };
-  left.forEach((i,k)  => s += tab(i, yL(k), true));
-  right.forEach((i,k) => s += tab(i, yR(k), false));
+  for(let i=0;i<n;i++){                                   // string: peg -> nut -> board
+    const p = peg(i);
+    s += `<polyline class="hs-str" data-hi="${i}" points="${f(p[0])},${f(p[1])} ${f(nutX(i))},${NUT_Y} ${f(nutX(i))},${BOARD}"/>`;
+  }
+  for(let i=0;i<n;i++){                                   // tuner button, aligned to the edge
+    const b = out(peg(i), IN + 5);
+    s += `<rect class="hs-tab" data-hi="${i}" x="${f(b[0]-15)}" y="${f(b[1]-7)}" width="30" height="14" rx="3"`
+       + ` transform="rotate(${f(ANG)} ${f(b[0])} ${f(b[1])})"/>`;
+  }
+  for(let i=0;i<n;i++){
+    const p = peg(i);
+    s += `<circle class="hs-hole" data-hi="${i}" cx="${f(p[0])}" cy="${f(p[1])}" r="8.5"/>`;
+  }
+  for(let i=0;i<n;i++){                                   // note label, trailing each tuner
+    const l = out(peg(i), IN + 50), m = state.strings[i];
+    s += `<g class="hs-lbl" data-i="${i}" transform="translate(${f(l[0])} ${f(l[1])})">`
+       + `<circle r="19"/><text>${midiName(m)}<tspan dy="3">${midiOctave(m)}</tspan></text></g>`;
+  }
 
-  // strings: peg hole -> nut -> straight down the board
-  const str = (i, hx, hy) =>
-    `<polyline class="hs-str" data-hi="${i}" points="${hx},${hy} ${nutX(i)},${NUT_Y} ${nutX(i)},${BOARD}"/>`;
-  left.forEach((i,k)  => s += str(i, holeX(true),  yL(k)));
-  right.forEach((i,k) => s += str(i, holeX(false), yR(k)));
-
-  // peg holes punched out of the silhouette
-  const hole = (i, hx, hy) => `<circle class="hs-hole" data-hi="${i}" cx="${hx}" cy="${hy}" r="9"/>`;
-  left.forEach((i,k)  => s += hole(i, holeX(true),  yL(k)));
-  right.forEach((i,k) => s += hole(i, holeX(false), yR(k)));
-
-  const label = (i, y, isLeft) => {
-    const cx = isLeft ? 44 : 296, m = state.strings[i];
-    return `<g class="hs-lbl" data-i="${i}" transform="translate(${cx} ${y})">` +
-           `<circle r="26"/><text>${midiName(m)}<tspan dy="4">${midiOctave(m)}</tspan></text></g>`;
-  };
-  left.forEach((i,k)  => s += label(i, yL(k), true));
-  right.forEach((i,k) => s += label(i, yR(k), false));
-
-  head.setAttribute('viewBox', `0 ${TOP-30} 340 ${BOARD - TOP + 40}`);
+  const l0 = out(peg(0), IN + 50), lN = out(peg(n-1), IN + 50);
+  const minX = Math.min(l0[0], lN[0]) - 23;
+  const minY = Math.min(tipY, lN[1] - 21) - 8;
+  const maxX = Math.max(tipX, l0[0] + 21, lN[0] + 21) + 8;
+  head.setAttribute('viewBox', `${f(minX)} ${f(minY)} ${f(maxX-minX)} ${f(BOARD - minY + 8)}`);
   head.innerHTML = s;
 
   head.querySelectorAll('.hs-lbl').forEach(g => {
@@ -752,6 +735,14 @@ function setHead(on){
   try{ localStorage.setItem(LS + '.head', on ? '1' : '0'); }catch(e){}
 }
 (() => {
+  /* ?view= forces a view without writing to storage - iframes on one origin share
+     localStorage, so mock.html could not otherwise show both layouts at once. */
+  const v = new URLSearchParams(location.search).get('view');
+  if(v === 'chips' || v === 'headstock'){
+    document.body.classList.toggle('headstock', v === 'headstock');
+    headBtn.classList.toggle('on', v === 'headstock');
+    return;
+  }
   let on = true;
   try{ on = localStorage.getItem(LS + '.head') !== '0'; }catch(e){}
   setHead(on);

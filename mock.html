@@ -15,12 +15,12 @@
   .rack{display:flex;gap:34px;flex-wrap:wrap;justify-content:center}
   figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:12px}
   .phone{
-    width:319px;height:672px;border-radius:44px;padding:11px;
+    width:319px;height:665px;border-radius:44px;padding:11px;
     background:linear-gradient(160deg,#40342a,#15100b 40%,#2b2119);
     box-shadow:0 30px 70px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.07);
   }
   .screen{width:100%;height:100%;border-radius:34px;overflow:hidden;background:#100a06;position:relative}
-  .screen iframe{width:375px;height:790px;border:0;transform:scale(.7893);transform-origin:0 0;display:block}
+  .screen iframe{width:375px;height:812px;border:0;transform:scale(.792);transform-origin:0 0;display:block}
   .island{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:99px;height:29px;
     background:#000;border-radius:15px;z-index:2;box-shadow:0 0 0 1px rgba(0,0,0,.9)}
   figcaption{font-size:13px;color:var(--dim);letter-spacing:.04em}
@@ -36,25 +36,34 @@
   <div class="rack">
     <figure>
       <div class="phone"><div class="screen"><div class="island"></div>
-        <iframe src="./?inset=59,34&amp;tuning=dropd&amp;pose=flat&amp;bare=1" title="Flat"></iframe></div></div>
+        <iframe src="./?inset=59,34&amp;pose=flat&amp;view=headstock" title="Flat"></iframe></div></div>
       <figcaption><b>Flat</b>winding down to drop D</figcaption>
     </figure>
     <figure>
       <div class="phone"><div class="screen"><div class="island"></div>
-        <iframe src="./?inset=59,34&amp;tuning=dropd&amp;pose=tune&amp;bare=1" title="In tune"></iframe></div></div>
+        <iframe src="./?inset=59,34&amp;pose=tune&amp;view=headstock" title="In tune"></iframe></div></div>
       <figcaption><b>In tune</b>within &plusmn;5 cents</figcaption>
     </figure>
     <figure>
       <div class="phone"><div class="screen"><div class="island"></div>
-        <iframe src="./?inset=59,34&amp;tuning=dropd&amp;pose=sharp&amp;bare=1" title="Sharp"></iframe></div></div>
+        <iframe src="./?inset=59,34&amp;pose=sharp&amp;view=headstock" title="Sharp"></iframe></div></div>
       <figcaption><b>Sharp</b>auto-picked the G string</figcaption>
+    </figure>
+    <figure>
+      <div class="phone"><div class="screen"><div class="island"></div>
+        <iframe src="./?inset=59,34&amp;pose=tune&amp;view=chips" title="Compact"></iframe></div></div>
+      <figcaption><b>Compact</b>Headstock toggled off</figcaption>
     </figure>
   </div>
 
   <p class="note">
-    The background is a <b>stand-in</b> that matches the album art's lighting.
-    Drop the real artwork in with <code>./set-art.sh &lt;file&gt;</code> and every screen picks it up.
-    The <code>◐</code> button in the app toggles the artwork off for a plain dark stage view.
+    The headstock lights the string, its tuner button and its peg hole together, so it
+    shows <i>which peg to turn</i> — not just which string is off. <code>Headstock</code>
+    swaps it for the compact chip row on the right.
+    <br><br>
+    The background is a <b>stand-in</b> matching the album art's lighting; drop the real
+    artwork in with <code>./set-art.sh &lt;file&gt;</code> and every screen picks it up.
+    <code>◐</code> toggles the artwork off for a plain dark stage view.
   </p>
 </body>
 </html>
