@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Drop Tuner — design mock</title>
+<style>
+  :root{--ink:#f8efe2;--dim:#a2825f}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:#0b0704;color:var(--ink);
+    font:16px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;
+    padding:48px 24px 64px;display:flex;flex-direction:column;align-items:center;gap:8px}
+  h1{margin:0;font-size:26px;font-weight:700;letter-spacing:-.4px}
+  p.sub{margin:0 0 30px;color:var(--dim);font-size:14px;text-align:center;max-width:60ch}
+  .rack{display:flex;gap:34px;flex-wrap:wrap;justify-content:center}
+  figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:12px}
+  .phone{
+    width:319px;height:672px;border-radius:44px;padding:11px;
+    background:linear-gradient(160deg,#40342a,#15100b 40%,#2b2119);
+    box-shadow:0 30px 70px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.07);
+  }
+  .screen{width:100%;height:100%;border-radius:34px;overflow:hidden;background:#100a06;position:relative}
+  .screen iframe{width:375px;height:790px;border:0;transform:scale(.7893);transform-origin:0 0;display:block}
+  .notch{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:88px;height:23px;
+    background:#000;border-radius:13px;z-index:2}
+  figcaption{font-size:13px;color:var(--dim);letter-spacing:.04em}
+  figcaption b{color:var(--ink);font-weight:600;display:block;font-size:14px;letter-spacing:0}
+  .note{margin-top:34px;max-width:62ch;color:var(--dim);font-size:13.5px;text-align:center;line-height:1.6}
+  .note code{background:#1c1209;border:1px solid #3a2716;border-radius:5px;padding:1px 6px;color:#e8c9a0;font-size:12.5px}
+</style>
+</head>
+<body>
+  <h1>Drop Tuner</h1>
+  <p class="sub">Live screens, not renders — each frame below is the real app running in an iframe.</p>
+
+  <div class="rack">
+    <figure>
+      <div class="phone"><div class="screen"><div class="notch"></div>
+        <iframe src="./?tuning=dropd&amp;pose=flat&amp;bare=1" title="Flat"></iframe></div></div>
+      <figcaption><b>Flat</b>winding down to drop D</figcaption>
+    </figure>
+    <figure>
+      <div class="phone"><div class="screen"><div class="notch"></div>
+        <iframe src="./?tuning=dropd&amp;pose=tune&amp;bare=1" title="In tune"></iframe></div></div>
+      <figcaption><b>In tune</b>within &plusmn;5 cents</figcaption>
+    </figure>
+    <figure>
+      <div class="phone"><div class="screen"><div class="notch"></div>
+        <iframe src="./?tuning=dropd&amp;pose=sharp&amp;bare=1" title="Sharp"></iframe></div></div>
+      <figcaption><b>Sharp</b>auto-picked the G string</figcaption>
+    </figure>
+  </div>
+
+  <p class="note">
+    The background is a <b>stand-in</b> that matches the album art's lighting.
+    Drop the real artwork in with <code>./set-art.sh &lt;file&gt;</code> and every screen picks it up.
+    The <code>◐</code> button in the app toggles the artwork off for a plain dark stage view.
+  </p>
+</body>
+</html>

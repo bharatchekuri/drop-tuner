@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <title>Drop Tuner</title>
 <meta name="description" content="Chromatic guitar tuner with drop and open tunings. No account, no subscription.">
-<meta name="theme-color" content="#0b0f14">
+<meta name="theme-color" content="#100a06">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -15,14 +15,14 @@
 <link rel="icon" href="icon-192.png">
 <style>
   :root{
-    --bg:#0b0f14; --bg2:#121a23; --line:#1e2a36; --dim:#5d6f80;
-    --txt:#e8eef5; --good:#35d07f; --near:#f2c14e; --off:#ef5b5b;
+    --bg:#100a06; --bg2:#1c1209; --line:#3a2716; --dim:#a2825f;
+    --txt:#f8efe2; --good:#41d98c; --near:#f0a92e; --off:#e2562a;
     --accent:var(--off);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;height:100%}
   body{
-    background:radial-gradient(120% 80% at 50% 0%, #131d27 0%, var(--bg) 60%);
+    background:radial-gradient(120% 80% at 50% 0%, #24160c 0%, var(--bg) 62%);
     color:var(--txt);
     font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;
     -webkit-user-select:none;user-select:none;touch-action:manipulation;
@@ -49,13 +49,13 @@
 
   main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
   svg#gauge{width:100%;max-width:360px;display:block}
-  .tick{stroke:#2c3a48;stroke-width:2;stroke-linecap:round}
-  .tick.maj{stroke:#465a6d;stroke-width:2.5}
+  .tick{stroke:#553c22;stroke-width:2;stroke-linecap:round}
+  .tick.maj{stroke:#7a5c3a;stroke-width:2.5}
   .tick.zero{stroke:var(--good);stroke-width:3}
-  .lbl{fill:#4a5b6b;font-size:11px;font-weight:600;text-anchor:middle}
+  .lbl{fill:#8a6b48;font-size:11px;font-weight:600;text-anchor:middle}
   #needle{fill:var(--txt);transition:transform .09s linear}
   #fill{stroke:var(--accent);stroke-width:9;fill:none;stroke-linecap:round;opacity:.95}
-  #track{stroke:#18222c;stroke-width:9;fill:none;stroke-linecap:round}
+  #track{stroke:#241708;stroke-width:9;fill:none;stroke-linecap:round}
   #zone{stroke:var(--good);stroke-width:9;fill:none;stroke-linecap:round;opacity:.28}
   #hub{fill:var(--txt)}
   .idle #needle,.idle #fill{opacity:.22}
@@ -65,7 +65,7 @@
   .note sub{font-size:.34em;font-weight:600;color:var(--dim);letter-spacing:0;vertical-align:.25em;margin-left:2px}
   .cents{margin-top:6px;font-size:19px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums;min-height:26px}
   .hz{margin-top:2px;font-size:13px;color:var(--dim);font-variant-numeric:tabular-nums;min-height:18px}
-  .idle .note{color:#3d4c5b}
+  .idle .note{color:#5c452e}
   .idle .cents{color:var(--dim);font-weight:600}
   .idle .hz{opacity:0}
   .lock{font-size:12px;color:var(--dim);margin-top:4px;min-height:16px}
@@ -77,11 +77,11 @@
     display:flex;flex-direction:column;align-items:center;gap:2px;
   }
   .chip small{font-size:10px;font-weight:600;opacity:.65}
-  .chip.active{color:var(--txt);border-color:#3a4d60;background:#18232e}
+  .chip.active{color:var(--txt);border-color:#6b4a2a;background:#2a1a0d}
   .chip.locked{border-color:var(--good);color:var(--good)}
   .chip.done{background:rgba(53,208,127,.14);border-color:var(--good);color:var(--good)}
   .chip .step{display:flex;gap:4px;margin-top:3px}
-  .chip .step button{background:#0f161e;border:1px solid var(--line);color:var(--txt);border-radius:6px;width:24px;height:22px;font-size:11px;line-height:1;padding:0}
+  .chip .step button{background:#160e07;border:1px solid var(--line);color:var(--txt);border-radius:6px;width:24px;height:22px;font-size:11px;line-height:1;padding:0}
 
   footer{display:flex;flex-direction:column;gap:10px}
   .row{display:flex;gap:10px}
@@ -89,18 +89,39 @@
     flex:1;background:var(--good);color:#06301c;border:0;border-radius:14px;
     padding:15px;font-size:16px;font-weight:700;
   }
-  .power.on{background:#182430;color:var(--txt);box-shadow:inset 0 0 0 1px var(--line)}
-  .ghost{background:#141d26;border:1px solid var(--line);color:var(--dim);border-radius:14px;padding:15px 16px;font-size:15px;font-weight:600}
+  .power.on{background:#241708;color:var(--txt);box-shadow:inset 0 0 0 1px var(--line)}
+  .ghost{background:#1a1209;border:1px solid var(--line);color:var(--dim);border-radius:14px;padding:15px 16px;font-size:15px;font-weight:600}
   .ghost.on{color:var(--good);border-color:var(--good)}
   .msg{font-size:13px;color:var(--dim);text-align:center;min-height:34px;line-height:1.35}
   .msg.err{color:var(--off)}
+  /* ── photo background ─────────────────────────────────────────────── */
+  #bg,#scrim{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .35s}
+  #bg{z-index:-2;background:center/cover no-repeat;filter:saturate(.95) brightness(.86) contrast(1.05) blur(.6px);transform:scale(1.05)}
+  #scrim{z-index:-1;background:
+      radial-gradient(78% 42% at 50% 34%, rgba(16,10,6,0) 0%, rgba(16,10,6,.24) 58%, rgba(16,10,6,.62) 100%),
+      linear-gradient(180deg, rgba(16,10,6,.86) 0%, rgba(16,10,6,.12) 22%, rgba(16,10,6,.20) 58%, rgba(16,10,6,.92) 100%)}
+  body.photo #bg,body.photo #scrim{opacity:1}
+  body.photo .note,body.photo .cents,body.photo .hz,body.photo .lock{text-shadow:0 2px 14px rgba(0,0,0,.85),0 0 3px rgba(0,0,0,.6)}
+  body.photo .lbl{fill:#d3b28a}
+  body.photo #track{stroke:rgba(12,7,3,.60)}
+  body.photo select#tuning,body.photo .ref,body.photo .chip,body.photo .ghost{
+    background-color:rgba(32,20,11,.50);-webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3);
+    border-color:rgba(255,255,255,.14)}
+  body.photo .chip.active{background-color:rgba(58,36,18,.74)}
+  body.photo .chip.done{background-color:rgba(53,208,127,.26)}
+  body.photo .power.on{background-color:rgba(32,20,11,.60);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+  body.photo .msg{text-shadow:0 1px 8px rgba(0,0,0,.9)}
+  #photoBtn{display:none;flex:0 0 auto;width:54px;padding:15px 0;font-size:17px}
+  body.has-photo #photoBtn{display:block}
   #testbar{display:none;gap:8px;align-items:center;font-size:12px;color:var(--dim)}
   #testbar.on{display:flex}
   #testbar input{flex:1}
-  pre#selftest{white-space:pre-wrap;font:11px/1.4 ui-monospace,Menlo,monospace;color:var(--dim);background:#0d141b;border:1px solid var(--line);border-radius:10px;padding:10px;max-height:44vh;overflow:auto}
+  pre#selftest{white-space:pre-wrap;font:11px/1.4 ui-monospace,Menlo,monospace;color:var(--dim);background:#150d06;border:1px solid var(--line);border-radius:10px;padding:10px;max-height:44vh;overflow:auto}
 </style>
 </head>
 <body>
+<div id="bg"></div>
+<div id="scrim"></div>
 <div class="wrap idle" id="root">
   <header>
     <select id="tuning" aria-label="Tuning"></select>
@@ -134,6 +155,7 @@
     <div class="row">
       <button class="power" id="power">Start listening</button>
       <button class="ghost" id="edit">Edit</button>
+      <button class="ghost" id="photoBtn" aria-label="Toggle band photo" title="Toggle band photo">◐</button>
     </div>
     <div id="testbar">
       <span>test&nbsp;tone</span>
@@ -472,11 +494,19 @@ function loop(now){
 
   const c = centsBetween(f, target);
   const abs = Math.abs(c);
-  setAccent(abs <= 5 ? '--good' : abs <= 18 ? '--near' : '--off');
+  show(target, c, f);
+  if(abs <= 5){ if(!inTuneSince) inTuneSince = now; } else inTuneSince = 0;
+  paintStrings(idx, inTuneSince && now - inTuneSince > 350);
+}
 
+/* Paints the readout for one (target, cents) pair. Shared by the live loop and
+   by ?pose=, so the mock cannot drift away from what the app actually renders. */
+function show(target, c, f){
+  const abs = Math.abs(c);
+  root.classList.remove('idle');
+  setAccent(abs <= 5 ? '--good' : abs <= 18 ? '--near' : '--off');
   note.innerHTML = midiName(target) + '<sub>' + midiOctave(target) + '</sub>';
   hz.textContent = f.toFixed(2) + ' Hz  ·  target ' + freqOf(target).toFixed(2) + ' Hz';
-
   if(abs > 55){
     cents.textContent = (c < 0 ? '▼▼  way flat' : '▲▲  way sharp') + '   ' + Math.round(c) + ' ¢';
   } else if(abs <= 5){
@@ -484,10 +514,7 @@ function loop(now){
   } else {
     cents.textContent = (c < 0 ? '▼ tune up  ' : '▲ tune down  ') + (c>=0?'+':'') + Math.round(c) + ' ¢';
   }
-
-  if(abs <= 5){ if(!inTuneSince) inTuneSince = now; } else inTuneSince = 0;
   render(Math.max(-50, Math.min(50, c)));
-  paintStrings(idx, inTuneSince && now - inTuneSince > 350);
 }
 
 /* ────────────────────────────── gauge ───────────────────────────────── */
@@ -599,6 +626,8 @@ TUNINGS.forEach(t => {
 });
 
 loadPrefs();
+{ const t = new URLSearchParams(location.search).get('tuning');
+  if(t && TUNINGS.some(x => x.id === t)) state.tuningId = t; }
 if(state.custom){
   const o = document.createElement('option');
   o.value='custom'; o.textContent='Custom'; tuningSel.appendChild(o);
@@ -624,6 +653,30 @@ function bumpRef(d){
 }
 $('refDown').addEventListener('click', () => bumpRef(-1));
 $('refUp').addEventListener('click', () => bumpRef(1));
+
+
+/* ── band photo background ───────────────────────────────────────────── */
+/* Drop a band.jpg next to index.html and it turns itself on. Absent, the app
+   stays on the plain dark background rather than showing a broken layer.     */
+const PHOTO = 'band.jpg';
+const photoBtn = $('photoBtn'), bgEl = $('bg');
+function setPhoto(on){
+  document.body.classList.toggle('photo', on);
+  photoBtn.classList.toggle('on', on);
+  try{ localStorage.setItem(LS + '.photo', on ? '1' : '0'); }catch(e){}
+}
+(() => {
+  const probe = new Image();
+  probe.onload = () => {
+    bgEl.style.backgroundImage = `url("${PHOTO}")`;
+    document.body.classList.add('has-photo');
+    let on = true;
+    try{ on = localStorage.getItem(LS + '.photo') !== '0'; }catch(e){}
+    setPhoto(on);
+  };
+  probe.src = PHOTO;
+})();
+photoBtn.addEventListener('click', () => setPhoto(!document.body.classList.contains('photo')));
 
 /* ───────────────────── test tone + self test (dev) ──────────────────── */
 
@@ -697,6 +750,16 @@ function runSelfTest(){
 }
 if(params.has('selftest')) runSelfTest();
 
+
+/* ?pose=flat|tune|sharp|far paints a frozen state for mockups and screenshots. */
+if(params.has('pose')){
+  const POSES = { flat:[38,-38], tune:[38,0], sharp:[55,27], far:[38,-140] };
+  const p = POSES[params.get('pose')] || POSES.tune;
+  const target = p[0], c = p[1];
+  show(target, c, freqOf(target)*Math.pow(2, c/1200));
+  paintStrings(state.strings.indexOf(target), Math.abs(c) <= 5);
+  if(params.has('bare')) document.querySelector('footer').style.display = 'none';
+}
 /* ───────────────────────── offline service worker ───────────────────── */
 if('serviceWorker' in navigator && location.protocol === 'https:'){
   navigator.serviceWorker.register('sw.js').catch(()=>{});

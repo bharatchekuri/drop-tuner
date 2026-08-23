@@ -1,7 +1,7 @@
 /* Cache-first so the tuner still works with no signal. Bump CACHE on every change. */
-const CACHE = 'droptuner-v1';
+const CACHE = 'droptuner-v2';
 const FILES = ['./', 'index.html', 'manifest.webmanifest',
-               'icon-192.png', 'icon-512.png', 'icon-512-maskable.png', 'apple-touch-icon.png'];
+               'icon-192.png', 'icon-512.png', 'icon-512-maskable.png', 'apple-touch-icon.png', 'band.jpg'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));

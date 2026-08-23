@@ -79,3 +79,21 @@ python3 make-icons.py        # regenerate the app icons
 
 Bump `CACHE` in `sw.js` whenever you change a file, or phones will keep serving
 the cached copy.
+
+## Album art background
+
+Drop the artwork in and every screen picks it up:
+
+```bash
+./set-art.sh ~/Downloads/gunsaway-albumart.jpg
+git add -A && git commit -m "Use real album art" && git push
+```
+
+It accepts HEIC/PNG/JPG, downscales to 1600px, and bumps the service-worker
+cache version so phones don't keep serving the old image. The `◐` button in the
+app toggles the artwork off for a plain dark stage view; the choice is remembered.
+
+`band.jpg` in the repo right now is a generated **stand-in** that only matches
+the artwork's lighting — see `make-standin.py`.
+
+`mock.html` shows three phone frames running the real app via `?pose=`.
