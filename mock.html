@@ -21,8 +21,8 @@
   }
   .screen{width:100%;height:100%;border-radius:34px;overflow:hidden;background:#100a06;position:relative}
   .screen iframe{width:375px;height:790px;border:0;transform:scale(.7893);transform-origin:0 0;display:block}
-  .notch{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:88px;height:23px;
-    background:#000;border-radius:13px;z-index:2}
+  .island{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:99px;height:29px;
+    background:#000;border-radius:15px;z-index:2;box-shadow:0 0 0 1px rgba(0,0,0,.9)}
   figcaption{font-size:13px;color:var(--dim);letter-spacing:.04em}
   figcaption b{color:var(--ink);font-weight:600;display:block;font-size:14px;letter-spacing:0}
   .note{margin-top:34px;max-width:62ch;color:var(--dim);font-size:13.5px;text-align:center;line-height:1.6}
@@ -31,22 +31,22 @@
 </head>
 <body>
   <h1>Drop Tuner</h1>
-  <p class="sub">Live screens, not renders — each frame below is the real app running in an iframe.</p>
+  <p class="sub">Live screens, not renders — each frame is the real app running in an iframe, with iPhone Dynamic Island safe areas applied.</p>
 
   <div class="rack">
     <figure>
-      <div class="phone"><div class="screen"><div class="notch"></div>
-        <iframe src="./?tuning=dropd&amp;pose=flat&amp;bare=1" title="Flat"></iframe></div></div>
+      <div class="phone"><div class="screen"><div class="island"></div>
+        <iframe src="./?inset=59,34&amp;tuning=dropd&amp;pose=flat&amp;bare=1" title="Flat"></iframe></div></div>
       <figcaption><b>Flat</b>winding down to drop D</figcaption>
     </figure>
     <figure>
-      <div class="phone"><div class="screen"><div class="notch"></div>
-        <iframe src="./?tuning=dropd&amp;pose=tune&amp;bare=1" title="In tune"></iframe></div></div>
+      <div class="phone"><div class="screen"><div class="island"></div>
+        <iframe src="./?inset=59,34&amp;tuning=dropd&amp;pose=tune&amp;bare=1" title="In tune"></iframe></div></div>
       <figcaption><b>In tune</b>within &plusmn;5 cents</figcaption>
     </figure>
     <figure>
-      <div class="phone"><div class="screen"><div class="notch"></div>
-        <iframe src="./?tuning=dropd&amp;pose=sharp&amp;bare=1" title="Sharp"></iframe></div></div>
+      <div class="phone"><div class="screen"><div class="island"></div>
+        <iframe src="./?inset=59,34&amp;tuning=dropd&amp;pose=sharp&amp;bare=1" title="Sharp"></iframe></div></div>
       <figcaption><b>Sharp</b>auto-picked the G string</figcaption>
     </figure>
   </div>

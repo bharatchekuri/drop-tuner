@@ -15,6 +15,10 @@
 <link rel="icon" href="icon-192.png">
 <style>
   :root{
+    /* Safe areas as variables so ?inset= can simulate a Dynamic Island phone in
+       mockups - iframes always report zero insets, which hid this bug. */
+    --sat:env(safe-area-inset-top,0px);  --sab:env(safe-area-inset-bottom,0px);
+    --sal:env(safe-area-inset-left,0px); --sar:env(safe-area-inset-right,0px);
     --bg:#100a06; --bg2:#1c1209; --line:#3a2716; --dim:#a2825f;
     --txt:#f8efe2; --good:#41d98c; --near:#f0a92e; --off:#e2562a;
     --accent:var(--off);
@@ -30,7 +34,7 @@
   }
   .wrap{
     min-height:100dvh;display:flex;flex-direction:column;gap:4px;
-    padding:calc(env(safe-area-inset-top) + 10px) 16px calc(env(safe-area-inset-bottom) + 14px);
+    padding:calc(var(--sat) + 10px) calc(var(--sar) + 16px) calc(var(--sab) + 14px) calc(var(--sal) + 16px);
     max-width:520px;margin:0 auto;
   }
 
@@ -47,6 +51,17 @@
   .ref span{font-size:13px;font-variant-numeric:tabular-nums;color:var(--dim);min-width:56px;text-align:center}
   .ref span b{color:var(--txt);font-weight:600}
 
+  .editpanel{display:none;align-items:center;gap:10px;margin:14px 0 -2px;
+    background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:7px 8px 7px 13px}
+  body.editing .editpanel{display:flex}
+  .editpanel .eplabel{flex:1;font-size:13px;font-weight:600;color:var(--dim)}
+  .editpanel .reset{background:none;border:0;color:var(--dim);font-size:12px;font-weight:600;padding:8px 6px}
+  #refBadge{display:none;background:var(--bg2);border:1px solid var(--near);color:var(--near);
+    border-radius:12px;padding:11px 14px;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+  #refBadge b{font-weight:700}
+  body.refoff #refBadge{display:block}
+  body.photo .editpanel,body.photo #refBadge{background-color:rgba(32,20,11,.52);
+    -webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3)}
   main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
   svg#gauge{width:100%;max-width:360px;display:block}
   .tick{stroke:#553c22;stroke-width:2;stroke-linecap:round}
@@ -70,9 +85,9 @@
   .idle .hz{opacity:0}
   .lock{font-size:12px;color:var(--dim);margin-top:4px;min-height:16px}
 
-  .strings{display:flex;gap:6px;margin:14px 0 12px}
+  .strings{display:flex;gap:5px;margin:14px 0 12px}
   .chip{
-    flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:12px;
+    flex:1;min-width:0;background:var(--bg2);border:1px solid var(--line);border-radius:12px;
     padding:9px 2px;text-align:center;color:var(--dim);font-weight:700;font-size:15px;
     display:flex;flex-direction:column;align-items:center;gap:2px;
   }
@@ -80,8 +95,9 @@
   .chip.active{color:var(--txt);border-color:#6b4a2a;background:#2a1a0d}
   .chip.locked{border-color:var(--good);color:var(--good)}
   .chip.done{background:rgba(53,208,127,.14);border-color:var(--good);color:var(--good)}
-  .chip .step{display:flex;gap:4px;margin-top:3px}
-  .chip .step button{background:#160e07;border:1px solid var(--line);color:var(--txt);border-radius:6px;width:24px;height:22px;font-size:11px;line-height:1;padding:0}
+  .chip .step{display:flex;gap:3px;margin-top:3px}
+  .chip .step button{background:#160e07;border:1px solid var(--line);color:var(--txt);border-radius:6px;
+    width:20px;height:22px;font-size:11px;line-height:1;padding:0;flex:0 0 auto}
 
   footer{display:flex;flex-direction:column;gap:10px}
   .row{display:flex;gap:10px}
@@ -125,11 +141,7 @@
 <div class="wrap idle" id="root">
   <header>
     <select id="tuning" aria-label="Tuning"></select>
-    <div class="ref">
-      <button id="refDown" aria-label="Lower reference pitch">−</button>
-      <span>A<b id="refVal">440</b></span>
-      <button id="refUp" aria-label="Raise reference pitch">+</button>
-    </div>
+    <button id="refBadge" aria-label="Reference pitch is not standard">A<b id="refVal">440</b></button>
   </header>
 
   <main>
@@ -148,6 +160,16 @@
       <div class="lock" id="lockmsg"></div>
     </div>
   </main>
+
+  <div class="editpanel" id="editpanel">
+    <span class="eplabel">Reference pitch</span>
+    <div class="ref">
+      <button id="refDown" aria-label="Lower reference pitch">−</button>
+      <span>A<b id="refVal2">440</b></span>
+      <button id="refUp" aria-label="Raise reference pitch">+</button>
+    </div>
+    <button class="reset" id="refReset">reset</button>
+  </div>
 
   <div class="strings" id="strings"></div>
 
@@ -559,7 +581,8 @@ const $ = id => document.getElementById(id);
 const root=$('root'), note=$('note'), cents=$('cents'), hz=$('hz'), lockmsg=$('lockmsg'),
       ticks=$('ticks'), track=$('track'), zone=$('zone'), fill=$('fill'), needle=$('needle'),
       power=$('power'), edit=$('edit'), stringsEl=$('strings'), msgEl=$('msg'),
-      tuningSel=$('tuning'), refVal=$('refVal'), testbar=$('testbar'),
+      tuningSel=$('tuning'), refVal=$('refVal'), refVal2=$('refVal2'),
+      refBadge=$('refBadge'), testbar=$('testbar'),
       testfreq=$('testfreq'), testval=$('testval');
 
 function msg(t, isErr){ msgEl.textContent = t; msgEl.classList.toggle('err', !!isErr); }
@@ -632,7 +655,7 @@ if(state.custom){
   const o = document.createElement('option');
   o.value='custom'; o.textContent='Custom'; tuningSel.appendChild(o);
 }
-refVal.textContent = state.ref;
+syncRef();
 applyTuning(state.tuningId);
 tuningSel.value = state.tuningId;
 buildGauge();
@@ -642,17 +665,25 @@ power.addEventListener('click', () => running ? stop() : start());
 edit.addEventListener('click', () => {
   state.editing = !state.editing;
   edit.classList.toggle('on', state.editing);
+  document.body.classList.toggle('editing', state.editing);
   edit.textContent = state.editing ? 'Done' : 'Edit';
-  msg(state.editing ? 'Nudge any string ♭ / ♯ a semitone to build your own tuning. It is remembered on this device.' : '');
+  msg(state.editing ? 'Nudge any string ♭ / ♯ a semitone to build your own tuning, or retune the A reference. Both are remembered on this device.' : '');
   buildStrings();
 });
+/* The reference pitch lives behind Edit because it is set-once-and-forget, but a
+   non-standard value has to stay visible or the targets look inexplicably wrong. */
+function syncRef(){
+  refVal.textContent = refVal2.textContent = state.ref;
+  document.body.classList.toggle('refoff', state.ref !== 440);
+}
 function bumpRef(d){
   state.ref = Math.min(466, Math.max(415, state.ref + d));
-  refVal.textContent = state.ref;
-  setRange(); buildStrings(); savePrefs();
+  syncRef(); setRange(); buildStrings(); savePrefs();
 }
 $('refDown').addEventListener('click', () => bumpRef(-1));
 $('refUp').addEventListener('click', () => bumpRef(1));
+$('refReset').addEventListener('click', () => bumpRef(440 - state.ref));
+refBadge.addEventListener('click', () => { if(!state.editing) edit.click(); });
 
 
 /* ── band photo background ───────────────────────────────────────────── */
@@ -750,6 +781,13 @@ function runSelfTest(){
 }
 if(params.has('selftest')) runSelfTest();
 
+
+/* ?inset=<top>,<bottom> fakes device safe areas so mock.html shows real clearance. */
+if(params.has('inset')){
+  const [t, b] = params.get('inset').split(',').map(n => parseFloat(n) || 0);
+  document.documentElement.style.setProperty('--sat', t + 'px');
+  document.documentElement.style.setProperty('--sab', (b || 0) + 'px');
+}
 
 /* ?pose=flat|tune|sharp|far paints a frozen state for mockups and screenshots. */
 if(params.has('pose')){

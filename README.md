@@ -34,6 +34,8 @@ Then open the resulting `https://…` URL on your iPhone **in Safari**, tap
 1. Open the HTTPS URL in **Safari** (not Chrome — only Safari can install to the
    home screen on iOS).
 2. Tap the **Share** button → **Add to Home Screen** → **Add**.
+   Layout respects `env(safe-area-inset-*)`, so nothing hides under the
+   Dynamic Island or notch when it launches fullscreen.
 3. It launches fullscreen with its own icon, no address bar, and works offline.
 
 If the mic prompt never appears when launched from the home-screen icon, delete
@@ -48,7 +50,10 @@ shortcut — it will then open in a normal Safari tab, where the mic always work
   flipping to Eb the way a plain chromatic tuner does.
 - Tap a string chip to lock onto it; tap again to go back to auto.
 - **Edit** nudges any string ♭/♯ a semitone to build a tuning that isn't listed.
-- `A440` steps the reference pitch between 415 and 466 Hz.
+- **Reference pitch** lives behind **Edit** (415-466 Hz, with a reset). It is a
+  set-once control, so it stays out of the way - but any value other than 440
+  shows as an amber `A44x` badge in the header, since otherwise every target
+  would look inexplicably wrong.
 - Green means within ±5 cents.
 
 ## How the pitch detection works
