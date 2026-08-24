@@ -485,7 +485,15 @@ document.addEventListener('visibilitychange', () => {
 
 /* ──────────────────────────── detect loop ───────────────────────────── */
 
+/* A plucked string genuinely wobbles a few cents while it decays, so a plain
+   fast average chases it and a hard 5-cent threshold flickers green on and off
+   frame by frame. Three things settle it: a median to drop single-frame
+   outliers, smoothing that gets heavier the closer the reading already is, and
+   hysteresis so green is entered at 5 cents but only released past 9.        */
+const IN_ENTER = 5, IN_EXIT = 9, IN_HOLD = 320;
 let smoothLog = null, lastSeen = 0, inTuneSince = 0;
+let inTune = false, outSince = 0;
+const histLog = [];
 
 function loop(now){
   raf = requestAnimationFrame(loop);
@@ -496,15 +504,28 @@ function loop(now){
   const res = detect(decimate(raw, decFactor), decRate);
 
   if(!res){
-    if(now - lastSeen > 1200){ root.classList.add('idle'); if(!TEST) hz.textContent=''; }
+    if(now - lastSeen > 1200){
+      root.classList.add('idle'); if(!TEST) hz.textContent = '';
+      histLog.length = 0; smoothLog = null; inTune = false; outSince = 0;
+    }
     return;
   }
   lastSeen = now;
   root.classList.remove('idle');
 
   const lf = Math.log2(res.freq);
-  if(smoothLog === null || Math.abs(lf - smoothLog) > 0.08) smoothLog = lf;   // snap on big jumps
-  else smoothLog += (lf - smoothLog) * 0.3;
+  histLog.push(lf);
+  if(histLog.length > 5) histLog.shift();
+  const med = histLog.slice().sort((a, b) => a - b)[histLog.length >> 1];
+
+  if(smoothLog === null || Math.abs(med - smoothLog) > 0.06){
+    smoothLog = med;                                  // different string: snap
+    histLog.length = 0; histLog.push(lf);
+    inTune = false; outSince = 0;
+  } else {
+    const d = Math.abs(med - smoothLog);               // log2 units: .012 ~= 14 cents
+    smoothLog += (med - smoothLog) * (d > 0.012 ? 0.30 : 0.10);
+  }
   const f = Math.pow(2, smoothLog);
 
   // pick target: locked string > nearest string in tuning > nearest chromatic note
@@ -523,23 +544,34 @@ function loop(now){
 
   const c = centsBetween(f, target);
   const abs = Math.abs(c);
-  show(target, c, f);
-  if(abs <= 5){ if(!inTuneSince) inTuneSince = now; } else inTuneSince = 0;
-  paintStrings(idx, inTuneSince && now - inTuneSince > 350);
+
+  if(!inTune){
+    if(abs <= IN_ENTER){ inTune = true; outSince = 0; }
+  } else if(abs > IN_EXIT){
+    if(!outSince) outSince = now;
+    if(now - outSince > IN_HOLD){ inTune = false; outSince = 0; }
+  } else {
+    outSince = 0;
+  }
+
+  show(target, c, f, inTune);
+  if(inTune){ if(!inTuneSince) inTuneSince = now; } else inTuneSince = 0;
+  paintStrings(idx, inTuneSince && now - inTuneSince > 300);
 }
 
 /* Paints the readout for one (target, cents) pair. Shared by the live loop and
    by ?pose=, so the mock cannot drift away from what the app actually renders. */
-function show(target, c, f){
+function show(target, c, f, inTuneFlag){
   const abs = Math.abs(c);
+  const ok = inTuneFlag === undefined ? abs <= IN_ENTER : inTuneFlag;
   root.classList.remove('idle');
-  setAccent(abs <= 5 ? '--good' : abs <= 18 ? '--near' : '--off');
+  setAccent(ok ? '--good' : abs <= 18 ? '--near' : '--off');
   note.innerHTML = midiName(target) + '<sub>' + midiOctave(target) + '</sub>';
   hz.textContent = f.toFixed(2) + ' Hz  ·  target ' + freqOf(target).toFixed(2) + ' Hz';
-  if(abs > 55){
-    cents.textContent = (c < 0 ? '▼▼  way flat' : '▲▲  way sharp') + '   ' + Math.round(c) + ' ¢';
-  } else if(abs <= 5){
+  if(ok){
     cents.textContent = '✓  in tune   ' + (c>=0?'+':'') + Math.round(c) + ' ¢';
+  } else if(abs > 55){
+    cents.textContent = (c < 0 ? '▼▼  way flat' : '▲▲  way sharp') + '   ' + Math.round(c) + ' ¢';
   } else {
     cents.textContent = (c < 0 ? '▼ tune up  ' : '▲ tune down  ') + (c>=0?'+':'') + Math.round(c) + ' ¢';
   }
@@ -599,6 +631,7 @@ function applyTuning(id){
   const t = TUNINGS.find(t=>t.id===id) || TUNINGS[0];
   state.strings = t.notes.map(nameToMidi);
   state.locked = -1;
+  histLog.length = 0; smoothLog = null; inTune = false; outSince = 0;
   setRange();
   buildStrings();
   savePrefs();
